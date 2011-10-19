@@ -23,7 +23,12 @@ type OpenOptions struct {
 
 	// The baud rate for the port.
 	//
-	// TODO(jacobsa): Document the legal values. Should we have a list of
-	// constants instead?
+	// TODO(jacobsa): Document the legal values.
 	BaudRate uint
+
+	// The number of data bits per frame. Legal values are 5, 6, 7, and 8.
+	DataBits uint
+
+	// TODO(jacobsa): Add options for parity, stop bits, and flow control. Also
+	// anything else relevant listed in `man termios`.
 }
