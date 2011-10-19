@@ -20,4 +20,10 @@
 type OpenOptions struct {
 	// The name of the port, e.g. "/dev/tty.usbserial-A8008HlV".
 	PortName string
+
+	// The baud rate for the port.
+	//
+	// TODO(jacobsa): Document the legal values. Should we have a list of
+	// constants instead?
+	BaudRate uint
 }
