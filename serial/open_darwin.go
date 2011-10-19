@@ -19,6 +19,7 @@ package serial
 
 import "io"
 import "os"
+import "syscall"
 import "unsafe"
 
 // termios types
@@ -66,7 +67,7 @@ type termios struct {
 // setTermios updates the termios struct associated with a serial port file
 // descriptor. This sets appropriate options for how the OS interacts with the
 // port.
-func setTermios(fd syscall.Handle, src termios) os.Error {
+func setTermios(fd int, src termios) os.Error {
 	// Make the ioctl syscall that sets the termios struct.
 	r1, _, errno :=
 		syscall.Syscall(
@@ -110,11 +111,11 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 			uintptr(0))
 
 	if err := os.NewSyscallError("SYS_IOCTL", int(errno)); err != nil {
-		return err
+		return nil, err
 	}
 
 	if r1 != 0 {
-		return os.NewError("Unknown error from SYS_FCNTL.")
+		return nil, os.NewError("Unknown error from SYS_FCNTL.")
 	}
 
 	// Set appropriate options.
