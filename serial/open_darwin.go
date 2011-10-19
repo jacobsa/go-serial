@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file contains OS-specific constants and types.
+// This file contains OS-specific constants and types that work on OS X (tested
+// on version 10.6.8).
 
 package serial
 
 import "io"
 import "os"
+import "unsafe"
 
 // termios types
 type cc_t byte
@@ -44,6 +46,13 @@ const (
 	VTIME = tcflag_t(17);
 )
 
+// sys/ttycom.h
+const (
+	TIOCGETA = 1078490131
+	TIOCSETA = 2152231956
+)
+
+// sys/termios.h
 type termios struct {
 	c_iflag tcflag_t
 	c_oflag tcflag_t
@@ -52,6 +61,31 @@ type termios struct {
 	c_cc [NCCS]cc_t
 	c_ispeed speed_t
 	c_ospeed speed_t
+}
+
+// setTermios updates the termios struct associated with a serial port file
+// descriptor. This sets appropriate options for how the OS interacts with the
+// port.
+func setTermios(fd syscall.Handle, src *termios) os.Error {
+	// Make the ioctl syscall that sets the termios struct.
+	r1, _, errno :=
+		syscall.Syscall(
+			syscall.SYS_IOCTL,
+			uintptr(fd),
+			uintptr(TIOCSETA),
+			uintptr(unsafe.Pointer(src)))
+
+	// Did the syscall return an error?
+	if err := os.NewSyscallError("SYS_IOCTL", int(errno)); err != nil {
+		return err
+	}
+
+	// Just in case, check the return value as well.
+	if r1 != 0 {
+		return os.NewError("Unknown error from SYS_IOCTL.")
+	}
+
+	return nil
 }
 
 func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
