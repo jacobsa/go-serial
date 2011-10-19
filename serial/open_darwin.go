@@ -67,14 +67,14 @@ type termios struct {
 // setTermios updates the termios struct associated with a serial port file
 // descriptor. This sets appropriate options for how the OS interacts with the
 // port.
-func setTermios(fd int, src termios) os.Error {
+func setTermios(fd int, src *termios) os.Error {
 	// Make the ioctl syscall that sets the termios struct.
 	r1, _, errno :=
 		syscall.Syscall(
 			syscall.SYS_IOCTL,
 			uintptr(fd),
 			uintptr(TIOCSETA),
-			uintptr(unsafe.Pointer(&src)))
+			uintptr(unsafe.Pointer(src)))
 
 	// Did the syscall return an error?
 	if err := os.NewSyscallError("SYS_IOCTL", int(errno)); err != nil {
@@ -89,7 +89,19 @@ func setTermios(fd int, src termios) os.Error {
 	return nil
 }
 
-func convertOptions(options OpenOptions) termios {
+func convertOptions(options OpenOptions) (*termios, os.Error) {
+	var result termios
+
+	// Data bits
+	switch options.DataBits {
+	case 5: result.c_cflag |= CS5
+	case 6: result.c_cflag |= CS6
+	case 7: result.c_cflag |= CS7
+	case 8: result.c_cflag |= CS8
+	default:
+		return nil, os.NewError("Invalid setting for DataBits.")
+	}
+
 	panic("Not implemented.")
 }
 
@@ -123,7 +135,10 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 	}
 
 	// Set appropriate options.
-	terminalOptions := convertOptions(options)
+	terminalOptions, err := convertOptions(options)
+	if err != nil {
+		return nil, err
+	}
 
 	err = setTermios(file.Fd(), terminalOptions)
 	if err != nil {
