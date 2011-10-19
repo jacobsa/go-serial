@@ -14,6 +14,11 @@
 
 // This file contains OS-specific constants and types that work on OS X (tested
 // on version 10.6.8).
+//
+// Helpful documentation for some of these options:
+//
+//     http://www.unixwiz.net/techtips/termios-vmin-vtime.html
+//
 
 package serial
 
@@ -30,7 +35,6 @@ type tcflag_t uint64
 // sys/termios.h
 const (
 	B9600 = 9600
-	B14400 = 14400
 	B19200 = 19200
 
 	CS5 = 0x00000000
@@ -92,6 +96,43 @@ func setTermios(fd int, src *termios) os.Error {
 func convertOptions(options OpenOptions) (*termios, os.Error) {
 	var result termios
 
+	// Ignore modem status lines. We don't want to receive SIGHUP when the serial
+	// port is disconnected, for example.
+	result.c_cflag |= CLOCAL
+
+	// Enable receiving data.
+	//
+	// NOTE(jacobsa): I don't know exactly what this flag is for. The man page
+	// seems to imply that it shouldn't really exist.
+	result.c_cflag |= CREAD
+
+	// Ignore parity errors.
+	//
+	// TODO(jacobsa): Make this an option instead.
+	result.c_iflag |= IGNPAR
+
+	// Turn off the inter-character timer.
+	//
+	// TODO(jacobsa): Make this an option instead.
+	result.c_cc[VTIME] = 0
+
+	// Make reads block until one byte is received.
+	//
+	// TODO(jacobsa): Make this an option instead.
+	result.c_cc[VMIN] = 1
+
+	// Baud rate
+	switch options.BaudRate {
+	case 9600:
+		result.c_ispeed = B9600
+		result.c_ospeed = B9600
+	case 19200:
+		result.c_ispeed = B19200
+		result.c_ospeed = B19200
+	default:
+		return nil, os.NewError("Invalid setting for BaudRate.")
+	}
+
 	// Data bits
 	switch options.DataBits {
 	case 5: result.c_cflag |= CS5
@@ -102,12 +143,12 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 		return nil, os.NewError("Invalid setting for DataBits.")
 	}
 
-	panic("Not implemented.")
+	return &result, nil
 }
 
 func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
-	// Open the serial port in non-blocking mode, since that seems to be required
-	// for OS X for some reason (otherwise it just blocks forever).
+	// Open the serial port in non-blocking mode, since otherwise the OS will
+	// wait for the CARRIER line to be asserted.
 	file, err :=
 		os.OpenFile(
 			options.PortName,
