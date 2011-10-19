@@ -66,14 +66,14 @@ type termios struct {
 // setTermios updates the termios struct associated with a serial port file
 // descriptor. This sets appropriate options for how the OS interacts with the
 // port.
-func setTermios(fd syscall.Handle, src *termios) os.Error {
+func setTermios(fd syscall.Handle, src termios) os.Error {
 	// Make the ioctl syscall that sets the termios struct.
 	r1, _, errno :=
 		syscall.Syscall(
 			syscall.SYS_IOCTL,
 			uintptr(fd),
 			uintptr(TIOCSETA),
-			uintptr(unsafe.Pointer(src)))
+			uintptr(unsafe.Pointer(&src)))
 
 	// Did the syscall return an error?
 	if err := os.NewSyscallError("SYS_IOCTL", int(errno)); err != nil {
@@ -89,6 +89,43 @@ func setTermios(fd syscall.Handle, src *termios) os.Error {
 }
 
 func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
-	return nil, os.NewError("Not implemented.")
+	// Open the serial port in non-blocking mode, since that seems to be required
+	// for OS X for some reason (otherwise it just blocks forever).
+	file, err :=
+		os.OpenFile(
+			options.PortName,
+			os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK,
+			0600)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// We want to do blocking I/O, so clear the non-blocking flag set above.
+	r1, _, errno :=
+		syscall.Syscall(
+			syscall.SYS_FCNTL,
+			uintptr(file.Fd()),
+			uintptr(syscall.F_SETFL),
+			uintptr(0))
+
+	if err := os.NewSyscallError("SYS_IOCTL", int(errno)); err != nil {
+		return err
+	}
+
+	if r1 != 0 {
+		return os.NewError("Unknown error from SYS_FCNTL.")
+	}
+
+	// Set appropriate options.
+	terminalOptions := convertOptions(options)
+
+	err = setTermios(file.Fd(), terminalOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	// We're done.
+	return file, nil
 }
 
