@@ -15,6 +15,8 @@
 // Package serial provides routines for interacting with serial ports.
 // Currently it supports only OS X; see the readme file for details.
 
+package serial
+
 import "io"
 import "os"
 
@@ -37,6 +39,6 @@ type OpenOptions struct {
 }
 
 // Open creates an io.ReadWriteCloser based on the supplied options struct.
-func Open(options OpenOptions) io.ReadWriteCloser, os.Error {
+func Open(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 	return nil, os.NewError("Not implemented.")
 }
