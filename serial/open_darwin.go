@@ -89,6 +89,10 @@ func setTermios(fd int, src termios) os.Error {
 	return nil
 }
 
+func convertOptions(options OpenOptions) termios {
+	panic("Not implemented.")
+}
+
 func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 	// Open the serial port in non-blocking mode, since that seems to be required
 	// for OS X for some reason (otherwise it just blocks forever).
