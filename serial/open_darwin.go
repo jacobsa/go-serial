@@ -18,6 +18,7 @@
 // Helpful documentation for some of these options:
 //
 //     http://www.unixwiz.net/techtips/termios-vmin-vtime.html
+//     http://www.taltech.com/support/entry/serial_intro
 //
 
 package serial
