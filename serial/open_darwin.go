@@ -34,9 +34,6 @@ type tcflag_t uint64
 
 // sys/termios.h
 const (
-	B9600  = 9600
-	B19200 = 19200
-
 	CS5    = 0x00000000
 	CS6    = 0x00000100
 	CS7    = 0x00000200
@@ -123,15 +120,36 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 
 	// Baud rate
 	switch options.BaudRate {
+	case 50:
+	case 75:
+	case 110:
+	case 134:
+	case 150:
+	case 200:
+	case 300:
+	case 600:
+	case 1200:
+	case 1800:
+	case 2400:
+	case 4800:
+	case 7200:
 	case 9600:
-		result.c_ispeed = B9600
-		result.c_ospeed = B9600
+	case 14400:
 	case 19200:
-		result.c_ispeed = B19200
-		result.c_ospeed = B19200
+	case 28800:
+	case 38400:
+	case 57600:
+	case 76800:
+	case 115200:
+	case 230400:
 	default:
 		return nil, os.NewError("Invalid setting for BaudRate.")
 	}
+
+	// On OS X, the termios.h constants for speeds just map to the values
+	// themselves.
+	result.c_ispeed = speed_t(options.BaudRate)
+	result.c_ospeed = speed_t(options.BaudRate)
 
 	// Data bits
 	switch options.DataBits {

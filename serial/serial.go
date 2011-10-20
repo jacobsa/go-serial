@@ -26,9 +26,31 @@ type OpenOptions struct {
 	// The name of the port, e.g. "/dev/tty.usbserial-A8008HlV".
 	PortName string
 
-	// The baud rate for the port.
+	// The baud rate for the port. The following values are supported:
 	//
-	// TODO(jacobsa): Document the legal values.
+	//    50
+	//    75
+	//    110
+	//    134
+	//    150
+	//    200
+	//    300
+	//    600
+	//    1200
+	//    1800
+	//    2400
+	//    4800
+	//    7200
+	//    9600
+	//    14400
+	//    19200
+	//    28800
+	//    38400
+	//    57600
+	//    76800
+	//    115200
+	//    230400
+	//
 	BaudRate uint
 
 	// The number of data bits per frame. Legal values are 5, 6, 7, and 8.
