@@ -65,13 +65,16 @@ type OpenOptions struct {
 	// The number of data bits per frame. Legal values are 5, 6, 7, and 8.
 	DataBits uint
 
+	// The number of stop bits per frame. Legal values are 1 and 2.
+	StopBits uint
+
 	// The type of parity bits to use for the connection. Currently parity errors
 	// are simply ignored; that is, bytes are delivered to the user no matter
 	// whether they were received with a parity error or not.
 	ParityMode ParityMode
 
-	// TODO(jacobsa): Add options for parity, stop bits, and flow control. Also
-	// anything else relevant listed in `man termios`.
+	// TODO(jacobsa): Add options for flow control. Also anything else relevant
+	// listed in `man termios`.
 }
 
 // Open creates an io.ReadWriteCloser based on the supplied options struct.

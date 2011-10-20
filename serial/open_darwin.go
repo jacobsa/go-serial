@@ -163,6 +163,16 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 		return nil, os.NewError("Invalid setting for DataBits.")
 	}
 
+	// Stop bits
+	switch options.StopBits {
+	case 1:
+		// Nothing to do; CSTOPB is already cleared.
+	case 2:
+		result.c_cflag |= CSTOPB
+	default:
+		return nil, os.NewError("Invalid setting for StopBits.")
+	}
+
 	// Parity mode
 	switch options.ParityMode {
 	case PARITY_NONE:
@@ -178,6 +188,8 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 		// PARENB, but continue to deliver all bytes to the user no matter what (by
 		// not setting INPCK). Leave out PARODD to use even mode.
 		options.c_cflag |= PARENB
+	default:
+		return nil, os.NewError("Invalid setting for ParityMode.")
 	}
 
 	return &result, nil
