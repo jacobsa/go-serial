@@ -34,21 +34,21 @@ type tcflag_t uint64
 
 // sys/termios.h
 const (
-	B9600 = 9600
+	B9600  = 9600
 	B19200 = 19200
 
-	CS5 = 0x00000000
-	CS6 = 0x00000100
-	CS7 = 0x00000200
-	CS8 = 0x00000300
+	CS5    = 0x00000000
+	CS6    = 0x00000100
+	CS7    = 0x00000200
+	CS8    = 0x00000300
 	CLOCAL = 0x00008000
-	CREAD = 0x00000800
+	CREAD  = 0x00000800
 	IGNPAR = 0x00000004
 
-	NCCS = 20;
+	NCCS = 20
 
-	VMIN = tcflag_t(16);
-	VTIME = tcflag_t(17);
+	VMIN  = tcflag_t(16)
+	VTIME = tcflag_t(17)
 )
 
 // sys/ttycom.h
@@ -59,11 +59,11 @@ const (
 
 // sys/termios.h
 type termios struct {
-	c_iflag tcflag_t
-	c_oflag tcflag_t
-	c_cflag tcflag_t
-	c_lflag tcflag_t
-	c_cc [NCCS]cc_t
+	c_iflag  tcflag_t
+	c_oflag  tcflag_t
+	c_cflag  tcflag_t
+	c_lflag  tcflag_t
+	c_cc     [NCCS]cc_t
 	c_ispeed speed_t
 	c_ospeed speed_t
 }
@@ -135,10 +135,14 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 
 	// Data bits
 	switch options.DataBits {
-	case 5: result.c_cflag |= CS5
-	case 6: result.c_cflag |= CS6
-	case 7: result.c_cflag |= CS7
-	case 8: result.c_cflag |= CS8
+	case 5:
+		result.c_cflag |= CS5
+	case 6:
+		result.c_cflag |= CS6
+	case 7:
+		result.c_cflag |= CS7
+	case 8:
+		result.c_cflag |= CS8
 	default:
 		return nil, os.NewError("Invalid setting for DataBits.")
 	}
@@ -152,7 +156,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 	file, err :=
 		os.OpenFile(
 			options.PortName,
-			os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK,
+			os.O_RDWR|os.O_NOCTTY|os.O_NONBLOCK,
 			0600)
 
 	if err != nil {
@@ -189,4 +193,3 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 	// We're done.
 	return file, nil
 }
-

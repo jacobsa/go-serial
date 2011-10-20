@@ -48,7 +48,7 @@ func readWithTimeout(r io.Reader, n int) ([]byte, os.Error) {
 	select {
 	case err := <-done:
 		return buf, err
-	case <- timeout:
+	case <-timeout:
 		return nil, os.NewError("Timed out.")
 	}
 
@@ -79,7 +79,7 @@ func TestIncrementAndEcho(t *testing.T) {
 	time.Sleep(3e9)
 
 	// Write some bytes.
-	b := []byte{ 0x00, 0x17, 0xFE, 0xFF }
+	b := []byte{0x00, 0x17, 0xFE, 0xFF}
 
 	n, err := circuit.Write(b)
 	if err != nil {
@@ -96,9 +96,16 @@ func TestIncrementAndEcho(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if b[0] != 0x01 { t.Error("Expected 0x01, got ", b[0]) }
-	if b[1] != 0x18 { t.Error("Expected 0x18, got ", b[1]) }
-	if b[2] != 0xFF { t.Error("Expected 0xFF, got ", b[2]) }
-	if b[3] != 0x00 { t.Error("Expected 0x00, got ", b[3]) }
+	if b[0] != 0x01 {
+		t.Error("Expected 0x01, got ", b[0])
+	}
+	if b[1] != 0x18 {
+		t.Error("Expected 0x18, got ", b[1])
+	}
+	if b[2] != 0xFF {
+		t.Error("Expected 0xFF, got ", b[2])
+	}
+	if b[3] != 0x00 {
+		t.Error("Expected 0x00, got ", b[3])
+	}
 }
-

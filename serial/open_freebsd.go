@@ -20,4 +20,3 @@ import "os"
 func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 	return nil, "Not implemented on this OS."
 }
-
