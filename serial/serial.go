@@ -20,6 +20,15 @@ package serial
 import "io"
 import "os"
 
+// Valid parity values.
+type ParityMode int
+
+const (
+	PARITY_NONE = 0
+	PARITY_ODD  = 1
+	PARITY_EVEN = 2
+)
+
 // OpenOptions is the struct containing all of the options necessary for
 // opening a serial port.
 type OpenOptions struct {
@@ -55,6 +64,11 @@ type OpenOptions struct {
 
 	// The number of data bits per frame. Legal values are 5, 6, 7, and 8.
 	DataBits uint
+
+	// The type of parity bits to use for the connection. Currently parity errors
+	// are simply ignored; that is, bytes are delivered to the user no matter
+	// whether they were received with a parity error or not.
+	ParityMode ParityMode
 
 	// TODO(jacobsa): Add options for parity, stop bits, and flow control. Also
 	// anything else relevant listed in `man termios`.

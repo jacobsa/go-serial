@@ -19,6 +19,8 @@
 //
 //     http://www.unixwiz.net/techtips/termios-vmin-vtime.html
 //     http://www.taltech.com/support/entry/serial_intro
+//     http://www.cs.utah.edu/dept/old/texinfo/glibc-manual-0.02/library_16.html
+//     http://permalink.gmane.org/gmane.linux.kernel/103713
 //
 
 package serial
@@ -104,11 +106,6 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	// seems to imply that it shouldn't really exist.
 	result.c_cflag |= CREAD
 
-	// Ignore parity errors.
-	//
-	// TODO(jacobsa): Make this an option instead.
-	result.c_iflag |= IGNPAR
-
 	// Turn off the inter-character timer.
 	//
 	// TODO(jacobsa): Make this an option instead.
@@ -164,6 +161,23 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 		result.c_cflag |= CS8
 	default:
 		return nil, os.NewError("Invalid setting for DataBits.")
+	}
+
+	// Parity mode
+	switch options.ParityMode {
+	case PARITY_NONE:
+		// Nothing to do; PARENB is already not set.
+	case PARITY_ODD:
+		// Enable parity generation and receiving at the hardware level using
+		// PARENB, but continue to deliver all bytes to the user no matter what (by
+		// not setting INPCK). Also turn on odd parity mode.
+		options.c_cflag |= PARENB
+		options.c_cflag |= PARODD
+	case PARITY_EVEN:
+		// Enable parity generation and receiving at the hardware level using
+		// PARENB, but continue to deliver all bytes to the user no matter what (by
+		// not setting INPCK). Leave out PARODD to use even mode.
+		options.c_cflag |= PARENB
 	}
 
 	return &result, nil
