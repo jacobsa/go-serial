@@ -25,6 +25,3 @@ void loop() {
     Serial.write(incoming_byte + 1);
   }
 }
-
-
-
