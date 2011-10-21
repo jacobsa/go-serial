@@ -30,7 +30,7 @@ Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
     import "fmt"
     import "github.com/jacobsa/go-serial/serial"
 
-		...
+    ...
 
     // Set up options.
     var options serial.OpenOptions
@@ -41,22 +41,22 @@ Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
     options.MinimumReadSize = 4
 
     // Open the port.
-		port, err := serial.Open(options)
-		if err != nil {
-		  panic("serial.Open: " + err.String())
-		}
+    port, err := serial.Open(options)
+    if err != nil {
+      panic("serial.Open: " + err.String())
+    }
 
-		// Make sure to close it later.
-		defer port.Close()
+    // Make sure to close it later.
+    defer port.Close()
 
     // Write 4 bytes to the port.
-		b := []byte{0x00, 0x01, 0x02, 0x03}
-		n, err := port.Write(b)
-		if err !+ nil {
-		  panic("port.Write: " + err.String())
-		}
+    b := []byte{0x00, 0x01, 0x02, 0x03}
+    n, err := port.Write(b)
+    if err !+ nil {
+      panic("port.Write: " + err.String())
+    }
 
-		fmt.Println("Wrote", n, "bytes.")
+    fmt.Println("Wrote", n, "bytes.")
 
 See the documentation for the `OpenOptions` struct in `serial.go` for more
 information on the supported options.
