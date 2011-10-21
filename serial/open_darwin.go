@@ -38,27 +38,27 @@ type tcflag_t uint64
 
 // sys/termios.h
 const (
-	CS5    = 0x00000000
-	CS6    = 0x00000100
-	CS7    = 0x00000200
-	CS8    = 0x00000300
-	CLOCAL = 0x00008000
-	CREAD  = 0x00000800
-	CSTOPB = 0x00000400
-	IGNPAR = 0x00000004
-	PARENB = 0x00001000
-	PARODD = 0x00002000
+	kCS5    = 0x00000000
+	kCS6    = 0x00000100
+	kCS7    = 0x00000200
+	kCS8    = 0x00000300
+	kCLOCAL = 0x00008000
+	kCREAD  = 0x00000800
+	kCSTOPB = 0x00000400
+	kIGNPAR = 0x00000004
+	kPARENB = 0x00001000
+	kPARODD = 0x00002000
 
-	NCCS = 20
+	kNCCS = 20
 
-	VMIN  = tcflag_t(16)
-	VTIME = tcflag_t(17)
+	kVMIN  = tcflag_t(16)
+	kVTIME = tcflag_t(17)
 )
 
 // sys/ttycom.h
 const (
-	TIOCGETA = 1078490131
-	TIOCSETA = 2152231956
+	kTIOCGETA = 1078490131
+	kTIOCSETA = 2152231956
 )
 
 // sys/termios.h
@@ -67,7 +67,7 @@ type termios struct {
 	c_oflag  tcflag_t
 	c_cflag  tcflag_t
 	c_lflag  tcflag_t
-	c_cc     [NCCS]cc_t
+	c_cc     [kNCCS]cc_t
 	c_ispeed speed_t
 	c_ospeed speed_t
 }
@@ -81,7 +81,7 @@ func setTermios(fd int, src *termios) os.Error {
 		syscall.Syscall(
 			syscall.SYS_IOCTL,
 			uintptr(fd),
-			uintptr(TIOCSETA),
+			uintptr(kTIOCSETA),
 			uintptr(unsafe.Pointer(src)))
 
 	// Did the syscall return an error?
@@ -106,13 +106,13 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 
 	// Ignore modem status lines. We don't want to receive SIGHUP when the serial
 	// port is disconnected, for example.
-	result.c_cflag |= CLOCAL
+	result.c_cflag |= kCLOCAL
 
 	// Enable receiving data.
 	//
 	// NOTE(jacobsa): I don't know exactly what this flag is for. The man page
 	// seems to imply that it shouldn't really exist.
-	result.c_cflag |= CREAD
+	result.c_cflag |= kCREAD
 
 	// Sanity check inter-character timeout and minimum read size options.
 	vtime := uint(round(float64(options.InterCharacterTimeout) / 100.0) * 100)
@@ -127,8 +127,8 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	}
 
 	// Set VMIN and VTIME. Make sure to convert to tenths of seconds for VTIME.
-	result.c_cc[VTIME] = cc_t(vtime / 100)
-	result.c_cc[VMIN] = cc_t(vmin)
+	result.c_cc[kVTIME] = cc_t(vtime / 100)
+	result.c_cc[kVMIN] = cc_t(vmin)
 
 	// Baud rate
 	switch options.BaudRate {
@@ -166,13 +166,13 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	// Data bits
 	switch options.DataBits {
 	case 5:
-		result.c_cflag |= CS5
+		result.c_cflag |= kCS5
 	case 6:
-		result.c_cflag |= CS6
+		result.c_cflag |= kCS6
 	case 7:
-		result.c_cflag |= CS7
+		result.c_cflag |= kCS7
 	case 8:
-		result.c_cflag |= CS8
+		result.c_cflag |= kCS8
 	default:
 		return nil, os.NewError("Invalid setting for DataBits.")
 	}
@@ -182,7 +182,7 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	case 1:
 		// Nothing to do; CSTOPB is already cleared.
 	case 2:
-		result.c_cflag |= CSTOPB
+		result.c_cflag |= kCSTOPB
 	default:
 		return nil, os.NewError("Invalid setting for StopBits.")
 	}
@@ -195,13 +195,13 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 		// Enable parity generation and receiving at the hardware level using
 		// PARENB, but continue to deliver all bytes to the user no matter what (by
 		// not setting INPCK). Also turn on odd parity mode.
-		result.c_cflag |= PARENB
-		result.c_cflag |= PARODD
+		result.c_cflag |= kPARENB
+		result.c_cflag |= kPARODD
 	case PARITY_EVEN:
 		// Enable parity generation and receiving at the hardware level using
 		// PARENB, but continue to deliver all bytes to the user no matter what (by
 		// not setting INPCK). Leave out PARODD to use even mode.
-		result.c_cflag |= PARENB
+		result.c_cflag |= kPARENB
 	default:
 		return nil, os.NewError("Invalid setting for ParityMode.")
 	}
