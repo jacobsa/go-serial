@@ -68,6 +68,7 @@ func TestIncrementAndEcho(t *testing.T) {
 	options.BaudRate = 19200
 	options.DataBits = 8
 	options.StopBits = 1
+	options.MinimumReadSize = 4
 
 	circuit, err := Open(options)
 	if err != nil {

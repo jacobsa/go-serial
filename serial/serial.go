@@ -98,6 +98,8 @@ type OpenOptions struct {
 	//     the caller's buffer and the Read() call returns immediately.
 	//     Otherwise, the call blocks until some data arrives or the
 	//     InterCharacterTimeout milliseconds elapse from the start of the call.
+	//     Note that in this configuration, InterCharacterTimeout must be at
+	//     least 100 ms.
 	//
 	// InterCharacterTimeout > 0 and MinimumReadSize > 0
 	//     Calls to Read() return when at least MinimumReadSize bytes are

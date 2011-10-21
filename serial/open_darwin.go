@@ -26,6 +26,7 @@
 package serial
 
 import "io"
+import "math"
 import "os"
 import "syscall"
 import "unsafe"
@@ -96,6 +97,10 @@ func setTermios(fd int, src *termios) os.Error {
 	return nil
 }
 
+func round(f float64) float64 {
+	return math.Floor(f + 0.5)
+}
+
 func convertOptions(options OpenOptions) (*termios, os.Error) {
 	var result termios
 
@@ -109,15 +114,21 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	// seems to imply that it shouldn't really exist.
 	result.c_cflag |= CREAD
 
-	// Turn off the inter-character timer.
-	//
-	// TODO(jacobsa): Make this an option instead.
-	result.c_cc[VTIME] = 0
+	// Sanity check inter-character timeout and minimum read size options.
+	vtime := uint(round(float64(options.InterCharacterTimeout) / 100.0) * 100)
+	vmin := options.MinimumReadSize
 
-	// Make reads block until one byte is received.
-	//
-	// TODO(jacobsa): Make this an option instead.
-	result.c_cc[VMIN] = 1
+	if (vmin == 0 && vtime < 100) {
+		return nil, os.NewError("Invalid values for InterCharacterTimeout and MinimumReadSize.")
+	}
+
+	if (vtime > 25500) {
+		return nil, os.NewError("Invalid value for InterCharacterTimeout.")
+	}
+
+	// Set VMIN and VTIME. Make sure to convert to tenths of seconds for VTIME.
+	result.c_cc[VTIME] = cc_t(vtime / 100)
+	result.c_cc[VMIN] = cc_t(vmin)
 
 	// Baud rate
 	switch options.BaudRate {
