@@ -112,7 +112,7 @@ type OpenOptions struct {
 	//     available. The inter-character timer is not used.
 	//
 	InterCharacterTimeout uint
-	MinimumReadSize uint
+	MinimumReadSize       uint
 }
 
 // Open creates an io.ReadWriteCloser based on the supplied options struct.

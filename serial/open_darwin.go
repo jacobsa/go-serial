@@ -115,14 +115,14 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	result.c_cflag |= kCREAD
 
 	// Sanity check inter-character timeout and minimum read size options.
-	vtime := uint(round(float64(options.InterCharacterTimeout) / 100.0) * 100)
+	vtime := uint(round(float64(options.InterCharacterTimeout)/100.0) * 100)
 	vmin := options.MinimumReadSize
 
-	if (vmin == 0 && vtime < 100) {
+	if vmin == 0 && vtime < 100 {
 		return nil, os.NewError("Invalid values for InterCharacterTimeout and MinimumReadSize.")
 	}
 
-	if (vtime > 25500) {
+	if vtime > 25500 {
 		return nil, os.NewError("Invalid value for InterCharacterTimeout.")
 	}
 
