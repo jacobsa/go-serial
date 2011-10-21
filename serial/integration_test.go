@@ -67,6 +67,7 @@ func TestIncrementAndEcho(t *testing.T) {
 	options.PortName = DEVICE
 	options.BaudRate = 19200
 	options.DataBits = 8
+	options.StopBits = 1
 
 	circuit, err := Open(options)
 	if err != nil {
