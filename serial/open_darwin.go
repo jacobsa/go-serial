@@ -43,7 +43,10 @@ const (
 	CS8    = 0x00000300
 	CLOCAL = 0x00008000
 	CREAD  = 0x00000800
+	CSTOPB = 0x00000400
 	IGNPAR = 0x00000004
+	PARENB = 0x00001000
+	PARODD = 0x00002000
 
 	NCCS = 20
 
@@ -181,13 +184,13 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 		// Enable parity generation and receiving at the hardware level using
 		// PARENB, but continue to deliver all bytes to the user no matter what (by
 		// not setting INPCK). Also turn on odd parity mode.
-		options.c_cflag |= PARENB
-		options.c_cflag |= PARODD
+		result.c_cflag |= PARENB
+		result.c_cflag |= PARODD
 	case PARITY_EVEN:
 		// Enable parity generation and receiving at the hardware level using
 		// PARENB, but continue to deliver all bytes to the user no matter what (by
 		// not setting INPCK). Leave out PARODD to use even mode.
-		options.c_cflag |= PARENB
+		result.c_cflag |= PARENB
 	default:
 		return nil, os.NewError("Invalid setting for ParityMode.")
 	}
