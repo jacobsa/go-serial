@@ -27,6 +27,7 @@ Use
 
 Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
 
+````go
     import "fmt"
     import "github.com/jacobsa/go-serial/serial"
 
@@ -57,6 +58,7 @@ Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
     }
 
     fmt.Println("Wrote", n, "bytes.")
+````
 
 See the documentation for the `OpenOptions` struct in `serial.go` for more
 information on the supported options.
