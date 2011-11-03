@@ -15,8 +15,7 @@
 package serial
 
 import "io"
-import "os"
 
-func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
+func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	return nil, "Not implemented on this OS."
 }
