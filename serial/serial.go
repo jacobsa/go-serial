@@ -18,7 +18,6 @@
 package serial
 
 import "io"
-import "os"
 
 // Valid parity values.
 type ParityMode int
@@ -116,7 +115,7 @@ type OpenOptions struct {
 }
 
 // Open creates an io.ReadWriteCloser based on the supplied options struct.
-func Open(options OpenOptions) (io.ReadWriteCloser, os.Error) {
+func Open(options OpenOptions) (io.ReadWriteCloser, error) {
 	// Redirect to the OS-specific function.
 	return openInternal(options)
 }

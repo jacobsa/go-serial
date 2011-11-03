@@ -25,7 +25,10 @@
 
 package serial
 
-import "io"
+import (
+	"errors"
+	"io"
+)
 import "math"
 import "os"
 import "syscall"
@@ -75,7 +78,7 @@ type termios struct {
 // setTermios updates the termios struct associated with a serial port file
 // descriptor. This sets appropriate options for how the OS interacts with the
 // port.
-func setTermios(fd int, src *termios) os.Error {
+func setTermios(fd int, src *termios) error {
 	// Make the ioctl syscall that sets the termios struct.
 	r1, _, errno :=
 		syscall.Syscall(
@@ -91,7 +94,7 @@ func setTermios(fd int, src *termios) os.Error {
 
 	// Just in case, check the return value as well.
 	if r1 != 0 {
-		return os.NewError("Unknown error from SYS_IOCTL.")
+		return errors.New("Unknown error from SYS_IOCTL.")
 	}
 
 	return nil
@@ -101,7 +104,7 @@ func round(f float64) float64 {
 	return math.Floor(f + 0.5)
 }
 
-func convertOptions(options OpenOptions) (*termios, os.Error) {
+func convertOptions(options OpenOptions) (*termios, error) {
 	var result termios
 
 	// Ignore modem status lines. We don't want to receive SIGHUP when the serial
@@ -119,11 +122,11 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	vmin := options.MinimumReadSize
 
 	if vmin == 0 && vtime < 100 {
-		return nil, os.NewError("Invalid values for InterCharacterTimeout and MinimumReadSize.")
+		return nil, errors.New("Invalid values for InterCharacterTimeout and MinimumReadSize.")
 	}
 
 	if vtime > 25500 {
-		return nil, os.NewError("Invalid value for InterCharacterTimeout.")
+		return nil, errors.New("Invalid value for InterCharacterTimeout.")
 	}
 
 	// Set VMIN and VTIME. Make sure to convert to tenths of seconds for VTIME.
@@ -155,7 +158,7 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	case 115200:
 	case 230400:
 	default:
-		return nil, os.NewError("Invalid setting for BaudRate.")
+		return nil, errors.New("Invalid setting for BaudRate.")
 	}
 
 	// On OS X, the termios.h constants for speeds just map to the values
@@ -174,7 +177,7 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	case 8:
 		result.c_cflag |= kCS8
 	default:
-		return nil, os.NewError("Invalid setting for DataBits.")
+		return nil, errors.New("Invalid setting for DataBits.")
 	}
 
 	// Stop bits
@@ -184,7 +187,7 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 	case 2:
 		result.c_cflag |= kCSTOPB
 	default:
-		return nil, os.NewError("Invalid setting for StopBits.")
+		return nil, errors.New("Invalid setting for StopBits.")
 	}
 
 	// Parity mode
@@ -203,13 +206,13 @@ func convertOptions(options OpenOptions) (*termios, os.Error) {
 		// not setting INPCK). Leave out PARODD to use even mode.
 		result.c_cflag |= kPARENB
 	default:
-		return nil, os.NewError("Invalid setting for ParityMode.")
+		return nil, errors.New("Invalid setting for ParityMode.")
 	}
 
 	return &result, nil
 }
 
-func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
+func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	// Open the serial port in non-blocking mode, since otherwise the OS will
 	// wait for the CARRIER line to be asserted.
 	file, err :=
@@ -235,7 +238,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, os.Error) {
 	}
 
 	if r1 != 0 {
-		return nil, os.NewError("Unknown error from SYS_FCNTL.")
+		return nil, errors.New("Unknown error from SYS_FCNTL.")
 	}
 
 	// Set appropriate options.

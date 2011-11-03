@@ -16,8 +16,11 @@
 
 package serial
 
-import "io"
-import "os"
+import (
+	"errors"
+	"io"
+)
+
 import "testing"
 import "time"
 
@@ -31,9 +34,9 @@ const (
 
 // Read at least n bytes from an io.Reader, making sure not to block if it
 // takes too long.
-func readWithTimeout(r io.Reader, n int) ([]byte, os.Error) {
+func readWithTimeout(r io.Reader, n int) ([]byte, error) {
 	buf := make([]byte, n)
-	done := make(chan os.Error)
+	done := make(chan error)
 	readAndCallBack := func() {
 		_, err := io.ReadAtLeast(r, buf, n)
 		done <- err
@@ -49,10 +52,10 @@ func readWithTimeout(r io.Reader, n int) ([]byte, os.Error) {
 	case err := <-done:
 		return buf, err
 	case <-timeout:
-		return nil, os.NewError("Timed out.")
+		return nil, errors.New("Timed out.")
 	}
 
-	return nil, os.NewError("Can't get here.")
+	return nil, errors.New("Can't get here.")
 }
 
 //////////////////////////////////////////////////////
