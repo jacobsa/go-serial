@@ -78,18 +78,18 @@ type termios struct {
 // setTermios updates the termios struct associated with a serial port file
 // descriptor. This sets appropriate options for how the OS interacts with the
 // port.
-func setTermios(fd int, src *termios) error {
+func setTermios(fd uintptr, src *termios) error {
 	// Make the ioctl syscall that sets the termios struct.
 	r1, _, errno :=
 		syscall.Syscall(
 			syscall.SYS_IOCTL,
-			uintptr(fd),
+			fd,
 			uintptr(kTIOCSETA),
 			uintptr(unsafe.Pointer(src)))
 
 	// Did the syscall return an error?
-	if err := os.NewSyscallError("SYS_IOCTL", int(errno)); err != nil {
-		return err
+	if errno != 0 {
+		return os.NewSyscallError("SYS_IOCTL", errno)
 	}
 
 	// Just in case, check the return value as well.
@@ -218,7 +218,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	file, err :=
 		os.OpenFile(
 			options.PortName,
-			os.O_RDWR|os.O_NOCTTY|os.O_NONBLOCK,
+			syscall.O_RDWR|syscall.O_NOCTTY|syscall.O_NONBLOCK,
 			0600)
 
 	if err != nil {
@@ -233,8 +233,8 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 			uintptr(syscall.F_SETFL),
 			uintptr(0))
 
-	if err := os.NewSyscallError("SYS_IOCTL", int(errno)); err != nil {
-		return nil, err
+	if errno != 0 {
+		return nil, os.NewSyscallError("SYS_IOCTL", errno)
 	}
 
 	if r1 != 0 {
