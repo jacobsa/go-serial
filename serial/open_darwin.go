@@ -234,7 +234,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 			uintptr(0))
 
 	if errno != 0 {
-		return nil, os.NewSyscallError("SYS_IOCTL", errno)
+		return nil, os.NewSyscallError("SYS_FCNTL", errno)
 	}
 
 	if r1 != 0 {
