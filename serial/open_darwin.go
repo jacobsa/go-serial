@@ -58,10 +58,14 @@ const (
 	kVTIME = tcflag_t(17)
 )
 
-// sys/ttycom.h
 const (
+
+	// sys/ttycom.h
 	kTIOCGETA = 1078490131
 	kTIOCSETA = 2152231956
+
+	// IOKit: serial/ioss.h
+	kIOSSIOSPEED = 0x80045402
 )
 
 // sys/termios.h
@@ -133,38 +137,9 @@ func convertOptions(options OpenOptions) (*termios, error) {
 	result.c_cc[kVTIME] = cc_t(vtime / 100)
 	result.c_cc[kVMIN] = cc_t(vmin)
 
-	// Baud rate
-	switch options.BaudRate {
-	case 50:
-	case 75:
-	case 110:
-	case 134:
-	case 150:
-	case 200:
-	case 300:
-	case 600:
-	case 1200:
-	case 1800:
-	case 2400:
-	case 4800:
-	case 7200:
-	case 9600:
-	case 14400:
-	case 19200:
-	case 28800:
-	case 38400:
-	case 57600:
-	case 76800:
-	case 115200:
-	case 230400:
-	default:
-		return nil, errors.New("Invalid setting for BaudRate.")
-	}
-
-	// On OS X, the termios.h constants for speeds just map to the values
-	// themselves.
-	result.c_ispeed = speed_t(options.BaudRate)
-	result.c_ospeed = speed_t(options.BaudRate)
+	// Set an arbitrary baudrate. We'll set the real one later.
+	result.c_ispeed = 14400
+	result.c_ospeed = 14400
 
 	// Data bits
 	switch options.DataBits {
@@ -241,7 +216,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 		return nil, errors.New("Unknown error from SYS_FCNTL.")
 	}
 
-	// Set appropriate options.
+	// Set standard termios options.
 	terminalOptions, err := convertOptions(options)
 	if err != nil {
 		return nil, err
@@ -250,6 +225,21 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	err = setTermios(file.Fd(), terminalOptions)
 	if err != nil {
 		return nil, err
+	}
+
+	// Set baud rate with the IOSSIOSPEED ioctl, to support non-standard speeds.
+	r2, _, errno2 := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		uintptr(file.Fd()),
+		uintptr(kIOSSIOSPEED),
+		uintptr(unsafe.Pointer(&options.BaudRate)));
+
+	if errno2 != 0 {
+		return nil, os.NewSyscallError("SYS_IOCTL", errno2)
+	}
+
+	if r2 != 0 {
+		return nil, errors.New("Unknown error from SYS_IOCTL.")
 	}
 
 	// We're done.
