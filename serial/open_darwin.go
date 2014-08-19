@@ -29,7 +29,6 @@ import (
 	"errors"
 	"io"
 )
-import "math"
 import "os"
 import "syscall"
 import "unsafe"
@@ -102,10 +101,6 @@ func setTermios(fd uintptr, src *termios) error {
 	}
 
 	return nil
-}
-
-func round(f float64) float64 {
-	return math.Floor(f + 0.5)
 }
 
 func convertOptions(options OpenOptions) (*termios, error) {
