@@ -17,7 +17,10 @@
 
 package serial
 
-import "io"
+import (
+	"io"
+	"math"
+)
 
 // Valid parity values.
 type ParityMode int
@@ -94,4 +97,9 @@ type OpenOptions struct {
 func Open(options OpenOptions) (io.ReadWriteCloser, error) {
 	// Redirect to the OS-specific function.
 	return openInternal(options)
+}
+
+// Rounds a float to the nearest integer.
+func round(f float64) float64 {
+	return math.Floor(f + 0.5)
 }
