@@ -4,8 +4,8 @@ This is a package that allows you to read from and write to serial ports in Go.
 OS support
 ==========
 
-Currently this package works only on OS X (tested on version 10.6). It could
-probably be ported to Linux simply by updating a few constants; get in touch if
+Currently this package works only on OS X and Linux. It could probably be ported
+to other Unix-like platforms simply by updating a few constants; get in touch if
 you are interested in helping and have hardware to test with. Windows would
 likely be a lot more work.
 
@@ -13,13 +13,13 @@ likely be a lot more work.
 Installation
 ============
 
-Simply use `goinstall`:
+Simply use `go install`:
 
-    goinstall github.com/jacobsa/go-serial/serial
+    go install github.com/jacobsa/go-serial/serial
 
 To update later:
 
-    goinstall -u github.com/jacobsa/go-serial/serial
+    go install -u github.com/jacobsa/go-serial/serial
 
 
 Use
