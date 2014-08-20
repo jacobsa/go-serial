@@ -16,7 +16,6 @@ import (
 // #include <linux/termios.h>
 //
 // int main(int argc, const char **argv) {
-//   printf("TCGETS2 = 0x%08X\n", TCGETS2);
 //   printf("TCSETS2 = 0x%08X\n", TCSETS2);
 //   printf("BOTHER  = 0x%08X\n", BOTHER);
 //   printf("NCCS    = %d\n",     NCCS);
@@ -24,10 +23,9 @@ import (
 // }
 //
 const (
-	TCGETS2 = 0x802C542A
-	TCSETS2 = 0x402C542B
-	BOTHER  = 0x1000
-	NCCS    = 19
+	kTCSETS2 = 0x402C542B
+	kBOTHER  = 0x1000
+	kNCCS    = 19
 )
 
 //
@@ -38,14 +36,14 @@ type cc_t byte
 type speed_t uint32
 type tcflag_t uint32
 type termios2 struct {
-	c_iflag  tcflag_t   // input mode flags
-	c_oflag  tcflag_t   // output mode flags
-	c_cflag  tcflag_t   // control mode flags
-	c_lflag  tcflag_t   // local mode flags
-	c_line   cc_t       // line discipline
-	c_cc     [NCCS]cc_t // control characters
-	c_ispeed speed_t    // input speed
-	c_ospeed speed_t    // output speed
+	c_iflag  tcflag_t    // input mode flags
+	c_oflag  tcflag_t    // output mode flags
+	c_cflag  tcflag_t    // control mode flags
+	c_lflag  tcflag_t    // local mode flags
+	c_line   cc_t        // line discipline
+	c_cc     [kNCCS]cc_t // control characters
+	c_ispeed speed_t     // input speed
+	c_ospeed speed_t     // output speed
 }
 
 //
@@ -68,12 +66,12 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		return nil, errors.New("invalid value for InterCharacterTimeout")
 	}
 
-	ccOpts := [NCCS]cc_t{}
+	ccOpts := [kNCCS]cc_t{}
 	ccOpts[syscall.VTIME] = cc_t(vtime / 100)
 	ccOpts[syscall.VMIN] = cc_t(vmin)
 
 	t2 := &termios2{
-		c_cflag:  syscall.CLOCAL | syscall.CREAD | BOTHER,
+		c_cflag:  syscall.CLOCAL | syscall.CREAD | kBOTHER,
 		c_ispeed: speed_t(options.BaudRate),
 		c_ospeed: speed_t(options.BaudRate),
 		c_cc:     ccOpts,
@@ -129,7 +127,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	r, _, errno := syscall.Syscall(
 		syscall.SYS_IOCTL,
 		uintptr(file.Fd()),
-		uintptr(TCSETS2),
+		uintptr(kTCSETS2),
 		uintptr(unsafe.Pointer(t2)))
 
 	if errno != 0 {
