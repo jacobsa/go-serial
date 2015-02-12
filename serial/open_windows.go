@@ -16,11 +16,8 @@ package serial
 
 import (
 	"fmt"
-	//"log"
-	//"github.com/hotei/bits"
 	"io"
 	"os"
-	//"strconv"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -44,39 +41,6 @@ type structDCB struct {
 	wReserved1                                     uint16
 }
 
-/*
-type _DCB struct {
-  DWORD DCBlength
-  DWORD BaudRate
-  DWORD fBinary  :1
-  DWORD fParity  :1
-  DWORD fOutxCtsFlow  :1
-  DWORD fOutxDsrFlow  :1
-  DWORD fDtrControl  :2
-  DWORD fDsrSensitivity  :1
-  DWORD fTXContinueOnXoff  :1
-  DWORD fOutX  :1
-  DWORD fInX  :1
-  DWORD fErrorChar  :1
-  DWORD fNull  :1
-  DWORD fRtsControl  :2 /* 13 and 14th bit, so [12:13]
-  DWORD fAbortOnError  :1
-  DWORD fDummy2  :17
-  WORD  wReserved
-  WORD  XonLim
-  WORD  XoffLim
-  BYTE  ByteSize
-  BYTE  Parity
-  BYTE  StopBits
-  char  XonChar
-  char  XoffChar
-  char  ErrorChar
-  char  EofChar
-  char  EvtChar
-  WORD  wReserved1
-}
-*/
-
 type structTimeouts struct {
 	ReadIntervalTimeout         uint32
 	ReadTotalTimeoutMultiplier  uint32
@@ -84,6 +48,7 @@ type structTimeouts struct {
 	WriteTotalTimeoutMultiplier uint32
 	WriteTotalTimeoutConstant   uint32
 }
+
 func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	if len(options.PortName) > 0 && options.PortName[0] != '\\' {
 		options.PortName = "\\\\.\\" + options.PortName
@@ -214,9 +179,6 @@ func setCommState(h syscall.Handle, options OpenOptions) error {
 
 	params.flags[0] = 0x01  // fBinary
 	params.flags[0] |= 0x10 // Assert DSR
-	//params.flags[1] = 0x10  // RTS is on
-	//log.Println("Byte val of commstat flags[0]:", strconv.FormatInt(int64(params.flags[0]), 2))
-	//log.Println("Byte val of commstat flags[1]:", strconv.FormatInt(int64(params.flags[1]), 2))
 
 	if options.ParityMode != PARITY_NONE {
 		params.flags[0] |= 0x03 // fParity
