@@ -99,6 +99,19 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		return nil, errors.New("invalid setting for ParityMode")
 	}
 
+	switch options.DataBits {
+	case 5:
+		t2.c_cflag |= syscall.CS5
+	case 6:
+		t2.c_cflag |= syscall.CS6
+	case 7:
+		t2.c_cflag |= syscall.CS7
+	case 8:
+		t2.c_cflag |= syscall.CS8
+	default:
+		return nil, errors.New("invalid setting for DataBits")
+	}
+
 	return t2, nil
 }
 
