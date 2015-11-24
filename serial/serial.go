@@ -89,6 +89,17 @@ type OpenOptions struct {
 	//     Calls to Read() return only when at least MinimumReadSize bytes are
 	//     available. The inter-character timer is not used.
 	//
+	// For windows usage, these options (termios) do not conform well to the
+	//     windows serial port / comms abstractions.  Please see the code in
+	//		 open_windows setCommTimeouts function for full documentation.
+	//   	 Summary:
+	//			Setting MinimumReadSize > 0 will cause the serialPort to block until
+	//			until data is available on the port.
+	//			Setting IntercharacterTimeout > 0 and MinimumReadSize == 0 will cause
+	//			the port to either wait until IntercharacterTimeout wait time is
+	//			exceeded OR there is character data to return from the port.
+	//
+
 	InterCharacterTimeout uint
 	MinimumReadSize       uint
 }
