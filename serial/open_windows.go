@@ -204,11 +204,9 @@ func setCommState(h syscall.Handle, options OpenOptions) error {
 func setCommTimeouts(h syscall.Handle, options OpenOptions) error {
 	var timeouts structTimeouts
 	const MAXDWORD = 1<<32 - 1
-	fmt.Printf("\n options: %+v \n", options)
 	timeoutConstant := uint32(round(float64(options.InterCharacterTimeout) / 100.0))
 	readIntervalTimeout := uint32(options.MinimumReadSize)
-	fmt.Printf("\n timeoutConstant: %d ----  readintervalTimeout: %d\n",
-		timeoutConstant, readIntervalTimeout)
+
 	if timeoutConstant > 0 && readIntervalTimeout == 0 {
 		//Assume we're setting for non blocking IO.
 		timeouts.ReadIntervalTimeout = MAXDWORD
