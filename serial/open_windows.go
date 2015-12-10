@@ -77,7 +77,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	if err = setupComm(h, 64, 64); err != nil {
 		return nil, err
 	}
-	if err = setCommTimeouts(h); err != nil {
+	if err = setCommTimeouts(h, options); err != nil {
 		return nil, err
 	}
 	if err = setCommMask(h); err != nil {
@@ -201,33 +201,64 @@ func setCommState(h syscall.Handle, options OpenOptions) error {
 	return nil
 }
 
-func setCommTimeouts(h syscall.Handle) error {
+func setCommTimeouts(h syscall.Handle, options OpenOptions) error {
 	var timeouts structTimeouts
 	const MAXDWORD = 1<<32 - 1
-	timeouts.ReadIntervalTimeout = MAXDWORD
-	timeouts.ReadTotalTimeoutMultiplier = MAXDWORD
-	timeouts.ReadTotalTimeoutConstant = MAXDWORD - 1
+	timeoutConstant := uint32(round(float64(options.InterCharacterTimeout) / 100.0))
+	readIntervalTimeout := uint32(options.MinimumReadSize)
 
-	/* From http://msdn.microsoft.com/en-us/library/aa363190(v=VS.85).aspx
+	if timeoutConstant > 0 && readIntervalTimeout == 0 {
+		//Assume we're setting for non blocking IO.
+		timeouts.ReadIntervalTimeout = MAXDWORD
+		timeouts.ReadTotalTimeoutMultiplier = MAXDWORD
+		timeouts.ReadTotalTimeoutConstant = timeoutConstant
+	} else if readIntervalTimeout > 0 {
+		// Assume we want to block and wait for input.
+		timeouts.ReadIntervalTimeout = readIntervalTimeout
+		timeouts.ReadTotalTimeoutMultiplier = 1
+		timeouts.ReadTotalTimeoutConstant = 1
+	} else {
+		// No idea what we intended, use defaults
+		// default config does what it did before.
+		timeouts.ReadIntervalTimeout = MAXDWORD
+		timeouts.ReadTotalTimeoutMultiplier = MAXDWORD
+		timeouts.ReadTotalTimeoutConstant = MAXDWORD - 1
+	}
 
-		 For blocking I/O see below:
+	/*
+			Empirical testing has shown that to have non-blocking IO we need to set:
+				ReadTotalTimeoutConstant > 0 and
+				ReadTotalTimeoutMultiplier = MAXDWORD and
+				ReadIntervalTimeout = MAXDWORD
 
-		 Remarks:
+				The documentation states that ReadIntervalTimeout is set in MS but
+				empirical investigation determines that it seems to interpret in units
+				of 100ms.
 
-		 If an application sets ReadIntervalTimeout and
-		 ReadTotalTimeoutMultiplier to MAXDWORD and sets
-		 ReadTotalTimeoutConstant to a value greater than zero and
-		 less than MAXDWORD, one of the following occurs when the
-		 ReadFile function is called:
+				If InterCharacterTimeout is set at all it seems that the port will block
+				indefinitly until a character is received.  Not all circumstances have been
+				tested. The input of an expert would be appreciated.
 
-		 If there are any bytes in the input buffer, ReadFile returns
-		       immediately with the bytes in the buffer.
+			From http://msdn.microsoft.com/en-us/library/aa363190(v=VS.85).aspx
 
-		 If there are no bytes in the input buffer, ReadFile waits
-	               until a byte arrives and then returns immediately.
+			 For blocking I/O see below:
 
-		 If no bytes arrive within the time specified by
-		       ReadTotalTimeoutConstant, ReadFile times out.
+			 Remarks:
+
+			 If an application sets ReadIntervalTimeout and
+			 ReadTotalTimeoutMultiplier to MAXDWORD and sets
+			 ReadTotalTimeoutConstant to a value greater than zero and
+			 less than MAXDWORD, one of the following occurs when the
+			 ReadFile function is called:
+
+			 If there are any bytes in the input buffer, ReadFile returns
+			       immediately with the bytes in the buffer.
+
+			 If there are no bytes in the input buffer, ReadFile waits
+		               until a byte arrives and then returns immediately.
+
+			 If no bytes arrive within the time specified by
+			       ReadTotalTimeoutConstant, ReadFile times out.
 	*/
 
 	r, _, err := syscall.Syscall(nSetCommTimeouts, 2, uintptr(h), uintptr(unsafe.Pointer(&timeouts)), 0)
