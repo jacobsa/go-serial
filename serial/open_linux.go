@@ -46,6 +46,20 @@ type termios2 struct {
 	c_ospeed speed_t     // output speed
 }
 
+const sER_RS485_ENABLED = (1 << 0)
+const sER_RS485_RTS_ON_SEND = (1 << 1)
+const sER_RS485_RTS_AFTER_SEND = (1 << 2)
+const sER_RS485_RX_DURING_TX = (1 << 4)
+const tIOCSRS485 = 0x542F
+
+type serial_rs485 struct {
+	flags uint32
+	delay_rts_before_send uint32
+	delay_rts_after_send uint32
+	padding [5]uint32
+}
+
+
 //
 // Returns a pointer to an instantiates termios2 struct, based on the given
 // OpenOptions. Termios2 is a Linux extension which allows arbitrary baud rates
@@ -149,6 +163,37 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 
 	if r != 0 {
 		return nil, errors.New("unknown error from SYS_IOCTL")
+	}
+
+	if (options.Rs485Enable) {
+		rs485 := serial_rs485{
+			sER_RS485_ENABLED,
+			uint32(options.Rs485DelayRtsBeforeSend),
+			uint32(options.Rs485DelayRtsAfterSend),
+			[5]uint32{0,0,0,0,0},
+		}
+
+		if (options.Rs485RtsOnSend) {
+			rs485.flags |= sER_RS485_RTS_ON_SEND
+		}
+
+		if (options.Rs485RtsAfterSend) {
+			rs485.flags |= sER_RS485_RTS_AFTER_SEND
+		}
+
+		r, _, errno := syscall.Syscall(
+			syscall.SYS_IOCTL,
+			uintptr(file.Fd()),
+			uintptr(tIOCSRS485),
+			uintptr(unsafe.Pointer(&rs485)))
+
+		if errno != 0 {
+			return nil, os.NewSyscallError("SYS_IOCTL (RS485)", errno)
+		}
+
+		if r != 0 {
+			return nil, errors.New("Unknown error from SYS_IOCTL (RS485)")
+		}
 	}
 
 	return file, nil

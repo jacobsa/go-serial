@@ -102,6 +102,13 @@ type OpenOptions struct {
 
 	InterCharacterTimeout uint
 	MinimumReadSize       uint
+
+	Rs485Enable bool
+	Rs485RtsOnSend bool
+	Rs485RtsAfterSend bool
+	Rs485RxDuringTx bool
+	Rs485DelayRtsBeforeSend int
+	Rs485DelayRtsAfterSend int
 }
 
 // Open creates an io.ReadWriteCloser based on the supplied options struct.
