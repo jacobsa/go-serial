@@ -11,7 +11,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/cbrake/go-serial/serial"
+	"github.com/jacobsa/go-serial/serial"
 )
 
 func usage() {
