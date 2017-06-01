@@ -132,9 +132,16 @@ func convertOptions(options OpenOptions) (*termios, error) {
 	result.c_cc[kVTIME] = cc_t(vtime / 100)
 	result.c_cc[kVMIN] = cc_t(vmin)
 
-	// Set an arbitrary baudrate. We'll set the real one later.
-	result.c_ispeed = 14400
-	result.c_ospeed = 14400
+	if !IsStandardBaudRate(options.BaudRate) {
+		// Non-standard baud-rates cannot be set via the standard IOCTL.
+		//
+		// Set an arbitrary baudrate. We'll set the real one later.
+		result.c_ispeed = 14400
+		result.c_ospeed = 14400
+	} else {
+		result.c_ispeed = speed_t(options.BaudRate)
+		result.c_ospeed = speed_t(options.BaudRate)
+	}
 
 	// Data bits
 	switch options.DataBits {
@@ -222,19 +229,21 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 		return nil, err
 	}
 
-	// Set baud rate with the IOSSIOSPEED ioctl, to support non-standard speeds.
-	r2, _, errno2 := syscall.Syscall(
-		syscall.SYS_IOCTL,
-		uintptr(file.Fd()),
-		uintptr(kIOSSIOSPEED),
-		uintptr(unsafe.Pointer(&options.BaudRate)));
+	if !IsStandardBaudRate(options.BaudRate) {
+		// Set baud rate with the IOSSIOSPEED ioctl, to support non-standard speeds.
+		r2, _, errno2 := syscall.Syscall(
+			syscall.SYS_IOCTL,
+			uintptr(file.Fd()),
+			uintptr(kIOSSIOSPEED),
+			uintptr(unsafe.Pointer(&options.BaudRate)))
 
-	if errno2 != 0 {
-		return nil, os.NewSyscallError("SYS_IOCTL", errno2)
-	}
+		if errno2 != 0 {
+			return nil, os.NewSyscallError("SYS_IOCTL", errno2)
+		}
 
-	if r2 != 0 {
-		return nil, errors.New("Unknown error from SYS_IOCTL.")
+		if r2 != 0 {
+			return nil, errors.New("Unknown error from SYS_IOCTL.")
+		}
 	}
 
 	// We're done.
