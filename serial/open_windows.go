@@ -71,17 +71,16 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 		}
 	}()
 
-	if err = setCommState(h, options); err != nil {
-		return nil, err
-	}
-	if err = setupComm(h, 64, 64); err != nil {
-		return nil, err
-	}
-	if err = setCommTimeouts(h, options); err != nil {
-		return nil, err
-	}
-	if err = setCommMask(h); err != nil {
-		return nil, err
+	if err = setCommState(h, options); err == nil {
+		if err = setupComm(h, 64, 64); err != nil {
+			return nil, err
+		}
+		if err = setCommTimeouts(h, options); err != nil {
+			return nil, err
+		}
+		if err = setCommMask(h); err != nil {
+			return nil, err
+		}
 	}
 
 	ro, err := newOverlapped()
