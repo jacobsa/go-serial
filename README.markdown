@@ -1,17 +1,19 @@
+go-serial
+=========
+
 This is a package that allows you to read from and write to serial ports in Go.
 
 
 OS support
-==========
+----------
 
 Currently this package works only on OS X, Linux and Windows. It could probably be ported
 to other Unix-like platforms simply by updating a few constants; get in touch if
-you are interested in helping and have hardware to test with. Windows would
-likely be a lot more work.
+you are interested in helping and have hardware to test with.
 
 
 Installation
-============
+------------
 
 Simply use `go install`:
 
@@ -23,7 +25,7 @@ To update later:
 
 
 Use
-===
+---
 
 Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
 
