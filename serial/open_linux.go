@@ -6,6 +6,8 @@ import (
 	"os"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 //
@@ -127,6 +129,10 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		t2.c_cflag |= syscall.CS8
 	default:
 		return nil, errors.New("invalid setting for DataBits")
+	}
+
+	if options.RTSCTSFlowControl {
+		t2.c_cflag |= unix.CRTSCTS
 	}
 
 	return t2, nil

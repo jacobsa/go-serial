@@ -40,16 +40,19 @@ type tcflag_t uint64
 
 // sys/termios.h
 const (
-	kCS5    = 0x00000000
-	kCS6    = 0x00000100
-	kCS7    = 0x00000200
-	kCS8    = 0x00000300
-	kCLOCAL = 0x00008000
-	kCREAD  = 0x00000800
-	kCSTOPB = 0x00000400
-	kIGNPAR = 0x00000004
-	kPARENB = 0x00001000
-	kPARODD = 0x00002000
+	kCS5        = 0x00000000
+	kCS6        = 0x00000100
+	kCS7        = 0x00000200
+	kCS8        = 0x00000300
+	kCLOCAL     = 0x00008000
+	kCREAD      = 0x00000800
+	kCSTOPB     = 0x00000400
+	kIGNPAR     = 0x00000004
+	kPARENB     = 0x00001000
+	kPARODD     = 0x00002000
+	kCCTS_OFLOW = 0x00010000
+	kCRTS_IFLOW = 0x00020000
+	kCRTSCTS    = kCCTS_OFLOW | kCRTS_IFLOW
 
 	kNCCS = 20
 
@@ -184,6 +187,10 @@ func convertOptions(options OpenOptions) (*termios, error) {
 		result.c_cflag |= kPARENB
 	default:
 		return nil, errors.New("Invalid setting for ParityMode.")
+	}
+
+	if options.RTSCTSFlowControl {
+		result.c_cflag |= kCRTSCTS
 	}
 
 	return &result, nil
