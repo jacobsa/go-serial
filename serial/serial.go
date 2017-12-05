@@ -85,6 +85,9 @@ type OpenOptions struct {
 	// whether they were received with a parity error or not.
 	ParityMode ParityMode
 
+	// Enable RTS/CTS (hardware) flow control.
+	RTSCTSFlowControl bool
+
 	// An inter-character timeout value, in milliseconds, and a minimum number of
 	// bytes to block for on each read. A call to Read() that otherwise may block
 	// waiting for more data will return immediately if the specified amount of

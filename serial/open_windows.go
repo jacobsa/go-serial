@@ -194,6 +194,11 @@ func setCommState(h syscall.Handle, options OpenOptions) error {
 	params.BaudRate = uint32(options.BaudRate)
 	params.ByteSize = byte(options.DataBits)
 
+	if options.RTSCTSFlowControl {
+		params.flags[0] |= 0x04 // fOutxCtsFlow = 0x1
+		params.flags[1] |= 0x20 // fRtsControl = RTS_CONTROL_HANDSHAKE (0x2)
+	}
+
 	r, _, err := syscall.Syscall(nSetCommState, 2, uintptr(h), uintptr(unsafe.Pointer(&params)), 0)
 	if r == 0 {
 		return err
