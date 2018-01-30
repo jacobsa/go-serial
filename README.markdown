@@ -15,13 +15,13 @@ you are interested in helping and have hardware to test with.
 Installation
 ------------
 
-Simply use `go install`:
+Simply use `go get`:
 
-    go install github.com/jacobsa/go-serial/serial
+    go get github.com/jacobsa/go-serial/serial
 
 To update later:
 
-    go install -u github.com/jacobsa/go-serial/serial
+    go get -u github.com/jacobsa/go-serial/serial
 
 
 Use
