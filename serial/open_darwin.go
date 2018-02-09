@@ -80,6 +80,22 @@ type termios struct {
 	c_ispeed speed_t
 	c_ospeed speed_t
 }
+type Port struct{
+	fd int
+}
+
+func (p Port) Close() error {
+	return syscall.Close(p.fd)
+}
+
+func (p Port) Read(b []byte) (n int, err error) {
+	return syscall.Read(p.fd, b)
+}
+
+func (p Port) Write(b []byte) (n int, err error) {
+	return syscall.Write(p.fd,b)
+}
+
 
 // setTermios updates the termios struct associated with a serial port file
 // descriptor. This sets appropriate options for how the OS interacts with the
@@ -199,8 +215,8 @@ func convertOptions(options OpenOptions) (*termios, error) {
 func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	// Open the serial port in non-blocking mode, since otherwise the OS will
 	// wait for the CARRIER line to be asserted.
-	file, err :=
-		os.OpenFile(
+	fd, err :=
+		syscall.Open(
 			options.PortName,
 			syscall.O_RDWR|syscall.O_NOCTTY|syscall.O_NONBLOCK,
 			0600)
@@ -213,7 +229,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	r1, _, errno :=
 		syscall.Syscall(
 			syscall.SYS_FCNTL,
-			uintptr(file.Fd()),
+			uintptr(fd),
 			uintptr(syscall.F_SETFL),
 			uintptr(0))
 
@@ -231,7 +247,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 		return nil, err
 	}
 
-	err = setTermios(file.Fd(), terminalOptions)
+	err = setTermios(uintptr(fd), terminalOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +256,7 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 		// Set baud rate with the IOSSIOSPEED ioctl, to support non-standard speeds.
 		r2, _, errno2 := syscall.Syscall(
 			syscall.SYS_IOCTL,
-			uintptr(file.Fd()),
+			uintptr(fd),
 			uintptr(kIOSSIOSPEED),
 			uintptr(unsafe.Pointer(&options.BaudRate)))
 
@@ -253,6 +269,9 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 		}
 	}
 
+	file := Port{
+		fd: fd,
+	}
 	// We're done.
 	return file, nil
 }
