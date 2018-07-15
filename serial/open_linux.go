@@ -25,11 +25,17 @@ import (
 // }
 //
 const (
-	kTCSETS2 = 0x402C542B
-	kBOTHER  = 0x1000
+	kTCSETS2 = 0x8030542B
+	kBOTHER  = 0x00001000
 	kNCCS    = 23 //fix for openwrt
 )
+/*
+TCSETS2 = 0x8030542B
 
+BOTHER = 0x00001000
+
+NCCS = 23
+*/
 //
 // Types from asm-generic/termbits.h
 //
