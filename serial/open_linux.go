@@ -27,7 +27,7 @@ import (
 const (
 	kTCSETS2 = unix.TCSETS2 //0x8030542B
 	kBOTHER  = unix.BOTHER//0x00001000
-	kNCCS    = unix.NCCS //fix for openwrt
+	kNCCS    = 23 // unix.NCCS //fix for openwrt
 )
 /*
 TCSETS2 = 0x8030542B
