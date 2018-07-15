@@ -11,6 +11,32 @@ Currently this package works only on OS X, Linux and Windows. It could probably 
 to other Unix-like platforms simply by updating a few constants; get in touch if
 you are interested in helping and have hardware to test with.
 
+The master works with OpenWrt With the following change
+````go
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <linux/termios.h>
+//
+// int main(int argc, const char **argv) {
+//   printf("TCSETS2 = 0x%08X\n", TCSETS2);
+//   printf("BOTHER  = 0x%08X\n", BOTHER);
+//   printf("NCCS    = %d\n",     NCCS);
+//   return 0;
+// }
+//
+const (
+	kTCSETS2 = 0x402C542B
+	kBOTHER  = 0x1000
+	kNCCS    = 19
+)
+following works with PC linux
+TCSETS2 = 0x402C542B
+BOTHER  = 0x00001000
+NCCS    = 19
+
+
+
+````
 
 Installation
 ------------
@@ -22,6 +48,7 @@ Simply use `go get`:
 To update later:
 
     go get -u github.com/philipgreat/go-serial/serial
+
 
 
 Use
