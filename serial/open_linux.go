@@ -24,10 +24,50 @@ import (
 //   return 0;
 // }
 //
+/*386
+amd64
+amd64p32
+arm
+armbe
+arm64
+arm64be
+ppc64
+ppc64le
+mips
+mipsle
+mips64
+mips64le
+mips64p32
+mips64p32le
+ppc
+s390
+s390x
+sparc
+sparc64
+and reference
+https://github.com/mojo-runtime/lib-linux/blob/6dbfa74d17beda9be9c6e3b595c76f8df3cbb077/c/struct-termios.h
+*/
+func nccs() int {
+	if runtime.GOARCH == "mips" {
+		return 23
+	}
+	if runtime.GOARCH == "mipsle" {
+		return 23
+	}
+	if runtime.GOARCH == "spark" {
+		return 17
+	}
+	if runtime.GOARCH == "sparc64" {
+		return 17
+	}
+	return 19
+
+}
+
 const (
 	kTCSETS2 = unix.TCSETS2 //0x8030542B
 	kBOTHER  = unix.BOTHER//0x00001000
-	kNCCS    = 23 // unix.NCCS //fix for openwrt
+	kNCCS    = nccs() // unix.NCCS //fix for openwrt
 )
 /*
 TCSETS2 = 0x8030542B
