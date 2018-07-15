@@ -27,7 +27,7 @@ import (
 const (
 	kTCSETS2 = 0x402C542B
 	kBOTHER  = 0x1000
-	kNCCS    = 19
+	kNCCS    = 23 //fix for openwrt
 )
 
 //
