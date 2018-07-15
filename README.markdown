@@ -17,11 +17,11 @@ Installation
 
 Simply use `go get`:
 
-    go get github.com/jacobsa/go-serial/serial
+    go get github.com/philipgreat/go-serial/serial
 
 To update later:
 
-    go get -u github.com/jacobsa/go-serial/serial
+    go get -u github.com/philipgreat/go-serial/serial
 
 
 Use
