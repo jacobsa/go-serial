@@ -30,38 +30,49 @@ Use
 Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
 
 ````go
-    import "fmt"
-    import "log"
-    import "github.com/jacobsa/go-serial/serial"
+    package main
 
-    ...
+//env GOOS=linux GOARCH=mips go build -ldflags "-s -w" mem.go
+import (
+	"fmt"
+	"log"
 
-    // Set up options.
-    options := serial.OpenOptions{
-      PortName: "/dev/tty.usbserial-A8008HlV",
-      BaudRate: 19200,
-      DataBits: 8,
-      StopBits: 1,
-      MinimumReadSize: 4,
-    }
+	"github.com/philipgreat/go-serial/serial"
+)
 
-    // Open the port.
-    port, err := serial.Open(options)
-    if err != nil {
-      log.Fatalf("serial.Open: %v", err)
-    }
+func main() {
+	// Below is an example of using our PrintMemUsage() function
+	// Print our starting memory usage (should be around 0mb)
+	options := serial.OpenOptions{
+		PortName:        "/dev/ttyUSB0",
+		BaudRate:        38400,
+		DataBits:        8,
+		StopBits:        1,
+		MinimumReadSize: 4,
+	}
+	port, err := serial.Open(options)
+	if err != nil {
+		log.Fatalf("serial.Open: %v", err)
+	}
+	defer port.Close()
+	b := []byte{0x28, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00,
+		0x00, 0x00, 0x80, 0x05, 0x98, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x1F, 0x00, 0x08, 0x12, 0x21, 0x00, 0x00, 0x64, 0x00, 0x64, 0x00,
+		0x64, 0x00, 0x64, 0x00, 0x64, 0x00, 0xFC, 0x63}
+	n, err := port.Write(b)
+	if err != nil {
+		log.Fatalf("port.Write: %v", err)
+	}
 
-    // Make sure to close it later.
-    defer port.Close()
+	fmt.Println("Wrote", n, "bytes.")
+	buf := make([]byte, 128)
+	n, err = port.Read(buf)
+	if err != nil {
+		log.Fatalf("port.Write: %v", err)
+	}
 
-    // Write 4 bytes to the port.
-    b := []byte{0x00, 0x01, 0x02, 0x03}
-    n, err := port.Write(b)
-    if err != nil {
-      log.Fatalf("port.Write: %v", err)
-    }
+}
 
-    fmt.Println("Wrote", n, "bytes.")
 ````
 
 See the documentation for the `OpenOptions` struct in `serial.go` for more
