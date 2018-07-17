@@ -47,20 +47,12 @@ sparc64
 and reference
 https://github.com/mojo-runtime/lib-linux/blob/6dbfa74d17beda9be9c6e3b595c76f8df3cbb077/c/struct-termios.h
 */
+nccsValueMap := map[string]int{"mips": 23, "mips64": 23, "spark": 17, "spark64": 24, "other": 19}
 func nccs() int {
-	if runtime.GOARCH == "mips" {
-		return 23
+	const value = nccsValueMap[runtime.GOARCH]
+	if value == nil{
+		return 19
 	}
-	if runtime.GOARCH == "mipsle" {
-		return 23
-	}
-	if runtime.GOARCH == "spark" {
-		return 17
-	}
-	if runtime.GOARCH == "sparc64" {
-		return 17
-	}
-	return 19
 
 }
 
