@@ -4,6 +4,12 @@ go-serial
 This is a package that allows you to read from and write to serial ports in Go.
 
 
+CPU and OS support
+----------
+
+This fork works only with MIPS cpu, most openwrt routers equipped with MIPS CPU.
+
+
 OS support
 ----------
 
