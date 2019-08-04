@@ -59,7 +59,7 @@ func nccs() int {
 const (
 	kTCSETS2 = unix.TCSETS2 //0x8030542B
 	kBOTHER  = unix.BOTHER//0x00001000
-	kNCCS    = nccs() // unix.NCCS //fix for openwrt
+	kNCCS    = 23 // 23 is the value fix for MIPS. most of the OpenWrt routers installed with MIPS cpu.
 )
 /*
 TCSETS2 = 0x8030542B
