@@ -56,8 +56,8 @@ func (p *Port) Close() error {
 	return p.f.Close()
 }
 
-func (p *Port) InWaiting() int {
-	return 0
+func (p *Port) InWaiting() (int, error) {
+	return 0, nil
 }
 
 func (p *Port) SetDeadline(time.Time) error {

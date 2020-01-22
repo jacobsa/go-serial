@@ -21,9 +21,9 @@ func (p *Port) Close() error {
 	return p.f.Close()
 }
 
-func (p *Port) InWaiting() int {
+func (p *Port) InWaiting() (int, error) {
 	// Funky time
-	return 0
+	return 0, nil
 }
 
 func (p *Port) SetDeadline(t time.Time) error {
