@@ -17,7 +17,17 @@
 
 package serial
 
-import "math"
+import (
+	"io"
+	"math"
+	"time"
+)
+
+type Port interface {
+	io.ReadWriteCloser
+	InWaiting() int
+	SetDeadline(time.Time) error
+}
 
 // Valid parity values.
 type ParityMode int

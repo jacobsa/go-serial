@@ -102,7 +102,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 	return t2, nil
 }
 
-func openInternal(options OpenOptions) (*SerialPort, error) {
+func openInternal(options OpenOptions) (*Port, error) {
 	file, openErr :=
 		os.OpenFile(
 			options.PortName,
@@ -138,10 +138,6 @@ func openInternal(options OpenOptions) (*SerialPort, error) {
 	}
 
 	return file, nil
-}
-
-func inwaitingInternal() (int, error) {
-	return 1, nil
 }
 
 func test() int {
