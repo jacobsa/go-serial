@@ -24,13 +24,14 @@ func (p *Port) Close() error {
 	return p.f.Close()
 }
 
-func (p *Port) InWaiting() (waiting int, err error) {
+func (p *Port) InWaiting() (int, error) {
 	// Funky time
-	_, _, err = unix.Syscall(unix.SYS_IOCTL, p.f.Fd(), unix.TIOCINQ, uintptr(unsafe.Pointer(&waiting)))
-	if err != nil {
+	var waiting *int
+	_, _, err := unix.Syscall6(unix.SYS_IOCTL, p.f.Fd(), unix.TIOCINQ, uintptr(unsafe.Pointer(waiting)), 0, 0, 0)
+	if err != 0 {
 		return 0, err
 	}
-	return waiting, nil
+	return *waiting, nil
 }
 
 func (p *Port) SetDeadline(t time.Time) error {
