@@ -15,21 +15,10 @@
 package serial
 
 import (
-	"fmt"
 	"os"
-	"sync"
 	"syscall"
 	"unsafe"
 )
-
-type SerialPort struct {
-	f  *os.File
-	fd syscall.Handle
-	rl sync.Mutex
-	wl sync.Mutex
-	ro *syscall.Overlapped
-	wo *syscall.Overlapped
-}
 
 type structDCB struct {
 	DCBlength, BaudRate                            uint32
@@ -48,7 +37,7 @@ type structTimeouts struct {
 	WriteTotalTimeoutConstant   uint32
 }
 
-func openInternal(options OpenOptions) (*SerialPort, error) {
+func openInternal(options OpenOptions) (*Port, error) {
 	if len(options.PortName) > 0 && options.PortName[0] != '\\' {
 		options.PortName = "\\\\.\\" + options.PortName
 	}
@@ -91,51 +80,13 @@ func openInternal(options OpenOptions) (*SerialPort, error) {
 	if err != nil {
 		return nil, err
 	}
-	port := new(SerialPort)
+	port := new(Port)
 	port.f = f
 	port.fd = h
 	port.ro = ro
 	port.wo = wo
 
 	return port, nil
-}
-
-func (p *SerialPort) Close() error {
-	return p.f.Close()
-}
-
-func (p *SerialPort) Write(buf []byte) (int, error) {
-	p.wl.Lock()
-	defer p.wl.Unlock()
-
-	if err := resetEvent(p.wo.HEvent); err != nil {
-		return 0, err
-	}
-	var n uint32
-	err := syscall.WriteFile(p.fd, buf, &n, p.wo)
-	if err != nil && err != syscall.ERROR_IO_PENDING {
-		return int(n), err
-	}
-	return getOverlappedResult(p.fd, p.wo)
-}
-
-func (p *SerialPort) Read(buf []byte) (int, error) {
-	if p == nil || p.f == nil {
-		return 0, fmt.Errorf("Invalid port on read %v %v", p, p.f)
-	}
-
-	p.rl.Lock()
-	defer p.rl.Unlock()
-
-	if err := resetEvent(p.ro.HEvent); err != nil {
-		return 0, err
-	}
-	var done uint32
-	err := syscall.ReadFile(p.fd, buf, &done, p.ro)
-	if err != nil && err != syscall.ERROR_IO_PENDING {
-		return int(done), err
-	}
-	return getOverlappedResult(p.fd, p.ro)
 }
 
 var (
@@ -289,14 +240,6 @@ func setCommMask(h syscall.Handle) error {
 	return nil
 }
 
-func resetEvent(h syscall.Handle) error {
-	r, _, err := syscall.Syscall(nResetEvent, 1, uintptr(h), 0, 0)
-	if r == 0 {
-		return err
-	}
-	return nil
-}
-
 func newOverlapped() (*syscall.Overlapped, error) {
 	var overlapped syscall.Overlapped
 	r, _, err := syscall.Syscall6(nCreateEvent, 4, 0, 1, 0, 0, 0, 0)
@@ -305,21 +248,4 @@ func newOverlapped() (*syscall.Overlapped, error) {
 	}
 	overlapped.HEvent = syscall.Handle(r)
 	return &overlapped, nil
-}
-
-func getOverlappedResult(h syscall.Handle, overlapped *syscall.Overlapped) (int, error) {
-	var n int
-	r, _, err := syscall.Syscall6(nGetOverlappedResult, 4,
-		uintptr(h),
-		uintptr(unsafe.Pointer(overlapped)),
-		uintptr(unsafe.Pointer(&n)), 1, 0, 0)
-	if r == 0 {
-		return n, err
-	}
-
-	return n, nil
-}
-
-func inWaitingInternal() (int, error) {
-	return 1, nil
 }

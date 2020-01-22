@@ -18,16 +18,8 @@
 package serial
 
 import (
-	"io"
 	"math"
-	"time"
 )
-
-type Port interface {
-	io.ReadWriteCloser
-	InWaiting() int
-	SetDeadline(time.Time) error
-}
 
 // Valid parity values.
 type ParityMode int
@@ -91,21 +83,9 @@ type OpenOptions struct {
 }
 
 // Open creates an io.ReadWriteCloser based on the supplied options struct.
-func Open(options OpenOptions) (*SerialPort, error) {
+func Open(options OpenOptions) (*Port, error) {
 	// Redirect to the OS-specific function.
 	return openInternal(options)
-}
-
-func (*SerialPort) InWaiting() (int, error) {
-	return inWaitingInternal()
-}
-
-func test() int {
-	var test *SerialPort
-	testyy := make([]byte, 5)
-	test.Read(testyy)
-	test.InWaiting()
-	return 0
 }
 
 // Rounds a float to the nearest integer.

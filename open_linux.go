@@ -8,9 +8,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// Serial port type
-type SerialPort os.File
-
 const (
 	NCCS = 19
 )
@@ -137,10 +134,5 @@ func openInternal(options OpenOptions) (*Port, error) {
 		return nil, errors.New("unknown error from SYS_IOCTL")
 	}
 
-	return file, nil
-}
-
-func test() int {
-	var test SerialPort
-	test.Read()
+	return NewPort(file), nil
 }
