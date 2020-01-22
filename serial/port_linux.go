@@ -3,6 +3,9 @@ package serial
 import (
 	"os"
 	"time"
+	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 type Port struct {
@@ -21,9 +24,13 @@ func (p *Port) Close() error {
 	return p.f.Close()
 }
 
-func (p *Port) InWaiting() (int, error) {
+func (p *Port) InWaiting() (waiting int, err error) {
 	// Funky time
-	return 0, nil
+	_, _, err = unix.Syscall(unix.SYS_IOCTL, p.f.Fd(), unix.TIOCINQ, uintptr(unsafe.Pointer(&waiting)))
+	if err != nil {
+		return 0, err
+	}
+	return waiting, nil
 }
 
 func (p *Port) SetDeadline(t time.Time) error {
