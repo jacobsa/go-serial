@@ -17,11 +17,11 @@ Installation
 
 Simply use `go get`:
 
-    go get github.com/jacobsa/go-serial/serial
+    go get github.com/Plantiga/simple-go-serial/serial
 
 To update later:
 
-    go get -u github.com/jacobsa/go-serial/serial
+    go get -u github.com/Plantiga/simple-go-serial/serial
 
 
 Use
@@ -64,5 +64,5 @@ Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
     fmt.Println("Wrote", n, "bytes.")
 ````
 
-See the documentation for the `OpenOptions` struct in `serial.go` for more
+See the documentation for the `OpenOptions` struct in `serial/serial.go` for more
 information on the supported options.
