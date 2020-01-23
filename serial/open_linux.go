@@ -61,6 +61,10 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		c_cc:     ccOpts,
 	}
 
+	if options.CanonicalMode {
+		t2.c_lflag &= ^tcflag_t(unix.ICANON)
+	}
+
 	switch options.StopBits {
 	case 1:
 	case 2:
