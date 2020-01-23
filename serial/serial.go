@@ -13,7 +13,10 @@
 // limitations under the License.
 
 // Package serial provides routines for interacting with serial ports.
-// Currently it supports only OS X; see the readme file for details.
+// Currently it supports only linux;
+
+// Edits by Andrew Hollister
+// 2020 Plantiga Technologies Inc.
 
 package serial
 
@@ -50,9 +53,9 @@ type OpenOptions struct {
 	// whether they were received with a parity error or not.
 	ParityMode ParityMode
 
-	// Enable RTS/CTS (hardware) flow control.
-	RTSCTSFlowControl bool
-
+	// Canonical mode determines whether the port will use line endings to determine
+	// end of messages, or (in the case of non-canonical) just treat the data as a
+	// binary stream, without considering line endings or processing data at all.
 	CanonicalMode bool
 
 	// An inter-character timeout value, in milliseconds, and a minimum number of
@@ -69,16 +72,6 @@ type OpenOptions struct {
 	// more information, see the discussion of VMIN and VTIME here:
 	//
 	//     http://www.unixwiz.net/techtips/termios-vmin-vtime.html
-
-	// For windows usage, these options (termios) do not conform well to the
-	//     windows serial port / comms abstractions.  Please see the code in
-	//		 open_windows setCommTimeouts function for full documentation.
-	//   	 Summary:
-	//			Setting MinimumReadSize > 0 will cause the serialPort to block until
-	//			until data is available on the port.
-	//			Setting IntercharacterTimeout > 0 and MinimumReadSize == 0 will cause
-	//			the port to either wait until IntercharacterTimeout wait time is
-	//			exceeded OR there is character data to return from the port.
 
 	InterCharacterTimeout uint
 	MinimumReadSize       uint
