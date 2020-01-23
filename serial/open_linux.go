@@ -61,7 +61,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		c_cc:     ccOpts,
 	}
 
-	if options.CanonicalMode {
+	if !options.CanonicalMode {
 		t2.c_lflag &= ^tcflag_t(unix.ICANON)
 	}
 
@@ -108,7 +108,7 @@ func openInternal(options OpenOptions) (*Port, error) {
 		os.OpenFile(
 			options.PortName,
 			unix.O_RDWR|unix.O_NOCTTY|unix.O_NONBLOCK,
-			0600)
+			0777)
 	if openErr != nil {
 		return nil, openErr
 	}

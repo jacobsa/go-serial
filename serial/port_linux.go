@@ -1,6 +1,7 @@
 package serial
 
 import (
+	"log"
 	"os"
 	"time"
 	"unsafe"
@@ -27,7 +28,12 @@ func (p *Port) Close() error {
 func (p *Port) InWaiting() (int, error) {
 	// Funky time
 	var waiting int
-	_, _, err := unix.Syscall(unix.SYS_IOCTL, p.f.Fd(), unix.TIOCINQ, uintptr(unsafe.Pointer(&waiting)))
+	log.Println(p.f)
+	log.Println("FIEL DESTERIPETOR ", p.f.Fd())
+	log.Println("waiting before: ", waiting)
+	a, b, err := unix.Syscall(unix.SYS_IOCTL, p.f.Fd(), unix.TIOCINQ, uintptr(unsafe.Pointer(&waiting)))
+	log.Println("got a: ", a, "\ngot b: ", b, "\ngot err: ", err)
+	log.Println("waiting after: ", waiting)
 	if err != 0 {
 		return 0, err
 	}
