@@ -38,7 +38,7 @@ type termios2 struct {
 func makeTermios2(options OpenOptions) (*termios2, error) {
 
 	// Sanity check inter-character timeout and minimum read size options.
-
+	// See serial.go for more information on vtime/vmin -- these only work in non-canonical mode
 	vtime := uint(round(float64(options.InterCharacterTimeout)/100.0) * 100)
 	vmin := options.MinimumReadSize
 
@@ -54,6 +54,10 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 	ccOpts[unix.VTIME] = cc_t(vtime / 100)
 	ccOpts[unix.VMIN] = cc_t(vmin)
 
+	// We set the flags for CLOCAL, CREAD and BOTHER
+	// CLOCAL : ignore modem control lines
+	// CREAD  : enable receiver
+	// BOTHER : allow generic BAUDRATE values
 	t2 := &termios2{
 		c_cflag:  unix.CLOCAL | unix.CREAD | unix.BOTHER,
 		c_ispeed: speed_t(options.BaudRate),
@@ -61,10 +65,13 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		c_cc:     ccOpts,
 	}
 
+	// Un-set the ICANON mode to allow non-canonical mode
+	// See: https://www.gnu.org/software/libc/manual/html_node/Canonical-or-Not.html
 	if !options.CanonicalMode {
 		t2.c_lflag &= ^tcflag_t(unix.ICANON)
 	}
 
+	// Allow for setting 1 or 2 stop bits
 	switch options.StopBits {
 	case 1:
 	case 2:
@@ -74,6 +81,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		return nil, errors.New("invalid setting for StopBits")
 	}
 
+	// If odd or even, enable parity generation (PARENB) and determine the type
 	switch options.ParityMode {
 	case Parity_None:
 	case Parity_Odd:
@@ -87,6 +95,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		return nil, errors.New("invalid setting for ParityMode")
 	}
 
+	// Choose the databits per frame
 	switch options.DataBits {
 	case 5:
 		t2.c_cflag |= unix.CS5
@@ -104,6 +113,10 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 }
 
 func openInternal(options OpenOptions) (*Port, error) {
+	// Open the file with RDWR, NOCTTY, NONBLOCK flags
+	// RDWR     : read/write
+	// NOCTTY   : don't allow the port to become the controlling terminal
+	// NONBLOCK : open with nonblocking so we don't stall
 	file, openErr :=
 		os.OpenFile(
 			options.PortName,
@@ -124,6 +137,7 @@ func openInternal(options OpenOptions) (*Port, error) {
 		return nil, optErr
 	}
 
+	// Set our termios2 struct as the file descriptor's settings
 	r, _, errno := unix.Syscall(
 		unix.SYS_IOCTL,
 		uintptr(file.Fd()),
