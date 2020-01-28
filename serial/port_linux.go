@@ -38,9 +38,12 @@ func (p *Port) InWaiting() (int, error) {
 	return waiting, nil
 }
 
-func (p *Port) SetTimeout(t time.Time) error {
+func (p *Port) SetDeadline(t time.Time) error {
 	// Funky Town
-	// todo(ahollist): Implement
+	err := p.f.SetDeadline(t)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
