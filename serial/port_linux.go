@@ -47,8 +47,8 @@ func (p *Port) SetTimeout(t time.Time) error {
 // Get the port's DTR pin state
 func (p *Port) DTR() (bool, error) {
 	var status int
-	_, _, err := unix.Syscall(unix.SYS_IOCTL, p.f.Fd(), unix.TIOCMGET, uintptr(unsafe.Pointer(&status)))
-	if err != 0 {
+	err := ioctl(unix.TIOCMGET, p.f.Fd(), uintptr(unsafe.Pointer(&status)))
+	if err != nil {
 		return false, err
 	}
 	if status&unix.TIOCM_DTR > 0 {
@@ -66,8 +66,8 @@ func (p *Port) SetDTR(state bool) error {
 	} else {
 		command = unix.TIOCMBIC
 	}
-	_, _, err := unix.Syscall(unix.SYS_IOCTL, p.f.Fd(), uintptr(command), 0)
-	if err != 0 {
+	err := ioctl(command, p.f.Fd(), 0)
+	if err != nil {
 		return err
 	}
 	return nil
