@@ -9,5 +9,5 @@ import (
 type port interface {
 	io.ReadWriteCloser
 	Inwaiting() (int, error)
-	SetTimeout(time.Time) error
+	SetDeadline(time.Time) error
 }
