@@ -31,8 +31,8 @@ func (p *Port) Close() error {
 func (p *Port) InWaiting() (int, error) {
 	// Funky time
 	var waiting int
-	_, _, err := unix.Syscall(unix.SYS_IOCTL, p.f.Fd(), unix.TIOCINQ, uintptr(unsafe.Pointer(&waiting)))
-	if err != 0 {
+	err := ioctl(unix.TIOCINQ, p.f.Fd(), uintptr(unsafe.Pointer(&waiting)))
+	if err != nil {
 		return 0, err
 	}
 	return waiting, nil
