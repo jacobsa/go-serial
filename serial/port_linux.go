@@ -62,7 +62,6 @@ func (p *Port) DTR() (bool, error) {
 
 // Set the port's DTR pin state
 func (p *Port) SetDTR(state bool) error {
-	// todo(ahollist): Implement
 	var command int
 	if state {
 		command = unix.TIOCMBIS
