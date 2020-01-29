@@ -8,26 +8,29 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// Port represents a File opened with serial port options
 type Port struct {
 	f *os.File
 }
 
-// Pass directly through to the file pointer and read the data stream
+// Read reads up to len(b) bytes from the Port's file
+// It will return the number of bytes read and an error, if any
 func (p *Port) Read(b []byte) (int, error) {
 	return p.f.Read(b)
 }
 
-// Pass directly through to the file pointer and write to the stream
+// Write writes len(b) number of bytes to the Port's file.
+// It will return the number of bytes written and an error, if any
 func (p *Port) Write(b []byte) (int, error) {
 	return p.f.Write(b)
 }
 
-// Close the file in our Port
+// Close closes the Port's file, making it unusable for I/O
 func (p *Port) Close() error {
 	return p.f.Close()
 }
 
-// Return the number of bytes waiting in the stream, using ioctl
+// InWaiting returns the number of waiting bytes in the Port's internal buffer.
 func (p *Port) InWaiting() (int, error) {
 	// Funky time
 	var waiting int
@@ -38,6 +41,8 @@ func (p *Port) InWaiting() (int, error) {
 	return waiting, nil
 }
 
+// SetDeadline sets the read and write deadlines for the Port's file.
+// Deadlines are absolute timeouts after which any read or write calls will fail with a timeout error.
 func (p *Port) SetDeadline(t time.Time) error {
 	// Funky Town
 	err := p.f.SetDeadline(t)
@@ -78,6 +83,7 @@ func (p *Port) SetDTR(state bool) error {
 	return nil
 }
 
+// NewPort creates and returns a new Port struct using the given os.File pointer
 func NewPort(f *os.File) *Port {
 	return &Port{f}
 }

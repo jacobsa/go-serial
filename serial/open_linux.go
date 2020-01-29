@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	NCCS = 19
+	nccs = 19
 )
 
 //
@@ -25,7 +25,7 @@ type termios2 struct {
 	c_cflag  tcflag_t   // control mode flags
 	c_lflag  tcflag_t   // local mode flags
 	c_line   cc_t       // line discipline
-	c_cc     [NCCS]cc_t // control characters
+	c_cc     [nccs]cc_t // control characters
 	c_ispeed speed_t    // input speed
 	c_ospeed speed_t    // output speed
 }
@@ -50,7 +50,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		return nil, errors.New("invalid value for InterCharacterTimeout")
 	}
 
-	ccOpts := [NCCS]cc_t{}
+	ccOpts := [nccs]cc_t{}
 	ccOpts[unix.VTIME] = cc_t(vtime / 100)
 	ccOpts[unix.VMIN] = cc_t(vmin)
 
