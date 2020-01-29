@@ -63,12 +63,13 @@ func (p *Port) DTR() (bool, error) {
 // Set the port's DTR pin state
 func (p *Port) SetDTR(state bool) error {
 	var command int
+	dtrFlag := unix.TIOCM_DTR
 	if state {
 		command = unix.TIOCMBIS
 	} else {
 		command = unix.TIOCMBIC
 	}
-	err := ioctl(command, p.f.Fd(), 0)
+	err := ioctl(command, p.f.Fd(), uintptr(unsafe.Pointer(&dtrFlag)))
 	if err != nil {
 		return err
 	}
