@@ -47,7 +47,8 @@ func (p *Port) SetDeadline(t time.Time) error {
 	return nil
 }
 
-// Get the port's DTR pin state
+// DTR returns the status of the Data Terminal Ready (DTR) line of the port.
+// See: https://en.wikipedia.org/wiki/Data_Terminal_Ready
 func (p *Port) DTR() (bool, error) {
 	var status int
 	err := ioctl(unix.TIOCMGET, p.f.Fd(), uintptr(unsafe.Pointer(&status)))
@@ -60,7 +61,8 @@ func (p *Port) DTR() (bool, error) {
 	return false, nil
 }
 
-// Set the port's DTR pin state
+// SetDTR sets the status of the DTR line of a port to the given state,
+// allowing manual control of the Data Terminal Ready modem line.
 func (p *Port) SetDTR(state bool) error {
 	var command int
 	dtrFlag := unix.TIOCM_DTR
