@@ -138,18 +138,9 @@ func openInternal(options OpenOptions) (*Port, error) {
 	}
 
 	// Set our termios2 struct as the file descriptor's settings
-	r, _, errno := unix.Syscall(
-		unix.SYS_IOCTL,
-		uintptr(file.Fd()),
-		uintptr(unix.TCSETS2),
-		uintptr(unsafe.Pointer(t2)))
-
-	if errno != 0 {
-		return nil, os.NewSyscallError("SYS_IOCTL", errno)
-	}
-
-	if r != 0 {
-		return nil, errors.New("unknown error from SYS_IOCTL")
+	errno := ioctl(unix.TCSETS2, file.Fd(), uintptr(unsafe.Pointer(t2)))
+	if errno != nil {
+		return nil, errno
 	}
 
 	return NewPort(file), nil
