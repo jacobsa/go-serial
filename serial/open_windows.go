@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This portion of the package is currently untested and not being worked on
+
 package serial
 
 import (

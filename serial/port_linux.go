@@ -13,7 +13,7 @@ type Port struct {
 	f *os.File
 }
 
-// Read reads up to len(b) bytes from the Port's file
+// Read reads up to len(b) bytes from the Port's file.
 // It will return the number of bytes read and an error, if any
 func (p *Port) Read(b []byte) (int, error) {
 	return p.f.Read(b)
