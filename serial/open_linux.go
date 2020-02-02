@@ -123,8 +123,11 @@ func openInternal(options OpenOptions) (*Port, error) {
 		return nil, openErr
 	}
 
-	// Clear the non-blocking flag set above.
-	nonblockErr := unix.SetNonblock(int(file.Fd()), false)
+	fd := file.Fd()
+
+	// When we call Fd(), we make the file descriptor blocking, which we don't want
+	// Let's unset the blocking flag and save the pointer for later.
+	nonblockErr := unix.SetNonblock(int(fd), true)
 	if nonblockErr != nil {
 		return nil, nonblockErr
 	}
@@ -135,10 +138,10 @@ func openInternal(options OpenOptions) (*Port, error) {
 	}
 
 	// Set our termios2 struct as the file descriptor's settings
-	errno := ioctl(unix.TCSETS2, file.Fd(), uintptr(unsafe.Pointer(t2)))
+	errno := ioctl(unix.TCSETS2, fd, uintptr(unsafe.Pointer(t2)))
 	if errno != nil {
 		return nil, errno
 	}
 
-	return NewPort(file, options.PortName), nil
+	return NewPort(file, fd, options.PortName), nil
 }
