@@ -1,3 +1,5 @@
+// This portion of the package is currently untested and not being worked on
+
 package serial
 
 import (

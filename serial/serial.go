@@ -24,7 +24,7 @@ import (
 	"math"
 )
 
-// Valid parity values.
+// ParityMode provides a type for three different parity modes of a serial port
 type ParityMode int
 
 const (

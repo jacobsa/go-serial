@@ -8,14 +8,12 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// NCCS is the number of control character sequences used for c_cc
 const (
-	NCCS = 19
+	nccs = 19
 )
 
-//
 // Types from asm-generic/termbits.h
-//
-
 type cc_t byte
 type speed_t uint32
 type tcflag_t uint32
@@ -25,16 +23,14 @@ type termios2 struct {
 	c_cflag  tcflag_t   // control mode flags
 	c_lflag  tcflag_t   // local mode flags
 	c_line   cc_t       // line discipline
-	c_cc     [NCCS]cc_t // control characters
+	c_cc     [nccs]cc_t // control characters
 	c_ispeed speed_t    // input speed
 	c_ospeed speed_t    // output speed
 }
 
-//
-// Returns a pointer to an instantiates termios2 struct, based on the given
+// makeTermios2 returns a pointer to an instantiates termios2 struct, based on the given
 // OpenOptions. Termios2 is a Linux extension which allows arbitrary baud rates
 // to be specified.
-//
 func makeTermios2(options OpenOptions) (*termios2, error) {
 
 	// Sanity check inter-character timeout and minimum read size options.
@@ -50,7 +46,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 		return nil, errors.New("invalid value for InterCharacterTimeout")
 	}
 
-	ccOpts := [NCCS]cc_t{}
+	ccOpts := [nccs]cc_t{}
 	ccOpts[unix.VTIME] = cc_t(vtime / 100)
 	ccOpts[unix.VMIN] = cc_t(vmin)
 
@@ -112,6 +108,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 	return t2, nil
 }
 
+// openInternal is the operating system specific port opening, given the OpenOptions
 func openInternal(options OpenOptions) (*Port, error) {
 	// Open the file with RDWR, NOCTTY, NONBLOCK flags
 	// RDWR     : read/write

@@ -32,7 +32,7 @@ Set up a `serial.OpenOptions` struct, then call `serial.Open`. For example:
 ````go
     import "fmt"
     import "log"
-    import "github.com/jacobsa/go-serial/serial"
+    import "github.com/Plantiga/simple-go-serial/serial"
 
     ...
 
