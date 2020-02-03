@@ -86,6 +86,6 @@ func (p *Port) SetDTR(state bool) error {
 }
 
 // NewPort creates and returns a new Port struct using the given os.File pointer
-func NewPort(f *os.File, fd uintptr, name string) *Port {
-	return &Port{f, fd, name}
+func NewPort(f *os.File, fd uintptr, options OpenOptions) *Port {
+	return &Port{f, fd, options.PortName}
 }
