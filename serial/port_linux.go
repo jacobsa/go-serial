@@ -10,7 +10,8 @@ import (
 
 // Port represents a File opened with serial port options
 type Port struct {
-	f *os.File
+	f          *os.File
+	DeviceName string
 }
 
 // Read reads up to len(b) bytes from the Port's file.
@@ -84,6 +85,6 @@ func (p *Port) SetDTR(state bool) error {
 }
 
 // NewPort creates and returns a new Port struct using the given os.File pointer
-func NewPort(f *os.File) *Port {
-	return &Port{f}
+func NewPort(f *os.File, options OpenOptions) *Port {
+	return &Port{f, options.PortName}
 }

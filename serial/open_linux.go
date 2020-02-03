@@ -140,5 +140,5 @@ func openInternal(options OpenOptions) (*Port, error) {
 		return nil, errno
 	}
 
-	return NewPort(file), nil
+	return NewPort(file, options), nil
 }
