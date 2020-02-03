@@ -11,6 +11,7 @@ import (
 // Port represents a File opened with serial port options
 type Port struct {
 	f          *os.File
+	fd         uintptr
 	DeviceName string
 }
 
@@ -35,7 +36,7 @@ func (p *Port) Close() error {
 func (p *Port) InWaiting() (int, error) {
 	// Funky time
 	var waiting int
-	err := ioctl(unix.TIOCINQ, p.f.Fd(), uintptr(unsafe.Pointer(&waiting)))
+	err := ioctl(unix.TIOCINQ, p.fd, uintptr(unsafe.Pointer(&waiting)))
 	if err != nil {
 		return 0, err
 	}
@@ -57,7 +58,7 @@ func (p *Port) SetDeadline(t time.Time) error {
 // See: https://en.wikipedia.org/wiki/Data_Terminal_Ready
 func (p *Port) DTR() (bool, error) {
 	var status int
-	err := ioctl(unix.TIOCMGET, p.f.Fd(), uintptr(unsafe.Pointer(&status)))
+	err := ioctl(unix.TIOCMGET, p.fd, uintptr(unsafe.Pointer(&status)))
 	if err != nil {
 		return false, err
 	}
@@ -77,7 +78,7 @@ func (p *Port) SetDTR(state bool) error {
 	} else {
 		command = unix.TIOCMBIC
 	}
-	err := ioctl(command, p.f.Fd(), uintptr(unsafe.Pointer(&dtrFlag)))
+	err := ioctl(command, p.fd, uintptr(unsafe.Pointer(&dtrFlag)))
 	if err != nil {
 		return err
 	}
@@ -85,6 +86,6 @@ func (p *Port) SetDTR(state bool) error {
 }
 
 // NewPort creates and returns a new Port struct using the given os.File pointer
-func NewPort(f *os.File, options OpenOptions) *Port {
-	return &Port{f, options.PortName}
+func NewPort(f *os.File, fd uintptr, options OpenOptions) *Port {
+	return &Port{f, fd, options.PortName}
 }
