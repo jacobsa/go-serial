@@ -24,12 +24,43 @@ import (
 //   return 0;
 // }
 //
-const (
-	kTCSETS2 = 0x402C542B
-	kBOTHER  = 0x1000
-	kNCCS    = 19
-)
+/*386
+amd64
+amd64p32
+arm
+armbe
+arm64
+arm64be
+ppc64
+ppc64le
+mips
+mipsle
+mips64
+mips64le
+mips64p32
+mips64p32le
+ppc
+s390
+s390x
+sparc
+sparc64
+and reference
+https://github.com/mojo-runtime/lib-linux/blob/6dbfa74d17beda9be9c6e3b595c76f8df3cbb077/c/struct-termios.h
+*/
 
+
+const (
+	kTCSETS2 = unix.TCSETS2 //0x8030542B
+	kBOTHER  = unix.BOTHER//0x00001000
+	kNCCS    = 23 // 23 is the value fix for MIPS. most of the OpenWrt routers installed with MIPS cpu.
+)
+/*
+TCSETS2 = 0x8030542B
+
+BOTHER = 0x00001000
+
+NCCS = 23
+*/
 //
 // Types from asm-generic/termbits.h
 //
