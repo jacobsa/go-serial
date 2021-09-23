@@ -16,7 +16,6 @@ package serial
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"sync"
 	"syscall"
@@ -49,7 +48,7 @@ type structTimeouts struct {
 	WriteTotalTimeoutConstant   uint32
 }
 
-func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
+func openInternal(options OpenOptions) (*serialPort, error) {
 	if len(options.PortName) > 0 && options.PortName[0] != '\\' {
 		options.PortName = "\\\\.\\" + options.PortName
 	}
@@ -137,6 +136,10 @@ func (p *serialPort) Read(buf []byte) (int, error) {
 		return int(done), err
 	}
 	return getOverlappedResult(p.fd, p.ro)
+}
+
+func (p *serialPort) Fd() uintptr {
+	return p.f.Fd()
 }
 
 var (

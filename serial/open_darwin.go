@@ -27,11 +27,10 @@ package serial
 
 import (
 	"errors"
-	"io"
+	"os"
+	"syscall"
+	"unsafe"
 )
-import "os"
-import "syscall"
-import "unsafe"
 
 // termios types
 type cc_t byte
@@ -196,7 +195,7 @@ func convertOptions(options OpenOptions) (*termios, error) {
 	return &result, nil
 }
 
-func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
+func openInternal(options OpenOptions) (*os.File, error) {
 	// Open the serial port in non-blocking mode, since otherwise the OS will
 	// wait for the CARRIER line to be asserted.
 	file, err :=

@@ -159,8 +159,14 @@ type OpenOptions struct {
 	Rs485DelayRtsAfterSend int
 }
 
-// Open creates an io.ReadWriteCloser based on the supplied options struct.
-func Open(options OpenOptions) (io.ReadWriteCloser, error) {
+// Port defines the serial port.
+type Port interface {
+	io.ReadWriteCloser
+	Fd() uintptr
+}
+
+// Open creates a Port based on the supplied options struct.
+func Open(options OpenOptions) (Port, error) {
 	// Redirect to the OS-specific function.
 	return openInternal(options)
 }

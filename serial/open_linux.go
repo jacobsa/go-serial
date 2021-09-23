@@ -2,7 +2,6 @@ package serial
 
 import (
 	"errors"
-	"io"
 	"os"
 	"syscall"
 	"unsafe"
@@ -138,7 +137,7 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 	return t2, nil
 }
 
-func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
+func openInternal(options OpenOptions) (*os.File, error) {
 
 	file, openErr :=
 		os.OpenFile(
