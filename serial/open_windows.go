@@ -345,3 +345,7 @@ func getOverlappedResult(h syscall.Handle, overlapped *syscall.Overlapped) (int,
 
 	return n, nil
 }
+
+func (p *serialPort) PortName() string {
+	return p.f.Name()
+}

@@ -277,3 +277,7 @@ func (p *port) Flush(in, out bool) error {
 	}
 	return nil
 }
+
+func (p *port) PortName() string {
+	return p.Name()
+}
