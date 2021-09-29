@@ -2,6 +2,7 @@ package serial
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"syscall"
 	"unsafe"
@@ -137,7 +138,9 @@ func makeTermios2(options OpenOptions) (*termios2, error) {
 	return t2, nil
 }
 
-func openInternal(options OpenOptions) (*os.File, error) {
+type port struct{ *os.File }
+
+func openInternal(options OpenOptions) (*port, error) {
 
 	file, openErr :=
 		os.OpenFile(
@@ -204,5 +207,23 @@ func openInternal(options OpenOptions) (*os.File, error) {
 		}
 	}
 
-	return file, nil
+	return &port{file}, nil
+}
+
+func (p *port) Flush(in, out bool) error {
+	var queueSel int
+	if in && out {
+		queueSel = unix.TCIOFLUSH
+	} else if in {
+		queueSel = unix.TCIFLUSH
+	} else if out {
+		queueSel = unix.TCOFLUSH
+	} else {
+		return nil
+	}
+	// TCFLSH = 0x540B aka tcflush()
+	if err := unix.IoctlSetInt(int(p.Fd()), 0x540B, queueSel); err != nil {
+		return fmt.Errorf("tcflush failed: %w", err)
+	}
+	return nil
 }

@@ -163,6 +163,7 @@ type OpenOptions struct {
 type Port interface {
 	io.ReadWriteCloser
 	Fd() uintptr
+	Flush(in, out bool) error
 }
 
 // Open creates a Port based on the supplied options struct.

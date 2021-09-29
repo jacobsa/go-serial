@@ -142,6 +142,26 @@ func (p *serialPort) Fd() uintptr {
 	return p.f.Fd()
 }
 
+func (p *serialPort) Flush(in, out bool) error {
+	var flags uintptr
+	if in {
+		flags |= 0x0008
+	}
+	if out {
+		flags |= 0x0004
+	}
+	if flags == 0 {
+		return nil
+	}
+
+	// BOOL PurgeComm(HANDLE hFile, DWORD dwFlags)
+	r, _, err := syscall.Syscall(nPurgeComm, 2, p.Fd(), flags, 0)
+	if r == 0 {
+		return fmt.Errorf("PurgeComm failed: %w", err)
+	}
+	return nil
+}
+
 var (
 	nSetCommState,
 	nSetCommTimeouts,
@@ -149,7 +169,8 @@ var (
 	nSetupComm,
 	nGetOverlappedResult,
 	nCreateEvent,
-	nResetEvent uintptr
+	nResetEvent,
+	nPurgeComm uintptr
 )
 
 func init() {
@@ -166,6 +187,7 @@ func init() {
 	nGetOverlappedResult = getProcAddr(k32, "GetOverlappedResult")
 	nCreateEvent = getProcAddr(k32, "CreateEventW")
 	nResetEvent = getProcAddr(k32, "ResetEvent")
+	nPurgeComm = getProcAddr(k32, "PurgeComm")
 }
 
 func getProcAddr(lib syscall.Handle, name string) uintptr {
