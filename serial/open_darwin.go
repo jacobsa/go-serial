@@ -27,11 +27,13 @@ package serial
 
 import (
 	"errors"
-	"io"
+	"fmt"
+	"os"
+	"syscall"
+	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
-import "os"
-import "syscall"
-import "unsafe"
 
 // termios types
 type cc_t byte
@@ -196,7 +198,9 @@ func convertOptions(options OpenOptions) (*termios, error) {
 	return &result, nil
 }
 
-func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
+type port struct{ *os.File }
+
+func openInternal(options OpenOptions) (*port, error) {
 	// Open the serial port in non-blocking mode, since otherwise the OS will
 	// wait for the CARRIER line to be asserted.
 	file, err :=
@@ -254,5 +258,26 @@ func openInternal(options OpenOptions) (io.ReadWriteCloser, error) {
 	}
 
 	// We're done.
-	return file, nil
+	return &port{file}, nil
+}
+
+func (p *port) Flush(in, out bool) error {
+	var what int
+	if in && out {
+		what = 0x03
+	} else if in {
+		what = 0x01
+	} else if out {
+		what = 0x02
+	} else {
+		return nil
+	}
+	if err := unix.IoctlSetPointerInt(int(p.Fd()), unix.TIOCFLUSH, what); err != nil {
+		return fmt.Errorf("ioctl(TIOCFLUSH) failed: %w", err)
+	}
+	return nil
+}
+
+func (p *port) PortName() string {
+	return p.Name()
 }
